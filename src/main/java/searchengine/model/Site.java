@@ -39,7 +39,7 @@ public class Site {
     @JsonManagedReference
     private List<Page> pages;
 
-    @OneToMany(mappedBy = "siteId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "siteId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<Lemma> lemmas;
 }

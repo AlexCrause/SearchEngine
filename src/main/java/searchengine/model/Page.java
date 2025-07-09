@@ -33,7 +33,7 @@ public class Page {
     @Column(name = "content", columnDefinition = "MEDIUMTEXT", nullable = false)
     private String content;
 
-    @OneToMany(mappedBy = "pageId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "pageId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<Index> indexes;
 

@@ -30,7 +30,7 @@ public class Lemma {
     @Column(name = "frequency", nullable = false)
     private Integer frequency;
 
-    @OneToMany(mappedBy = "lemmaId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "lemmaId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<Index> indexes;
 }
