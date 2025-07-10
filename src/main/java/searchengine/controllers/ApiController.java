@@ -38,7 +38,7 @@ public class ApiController {
     }
 
     @PostMapping("/indexPage")
-    public ResponseEntity<?> indexPage() {
-        return indexingService.indexPage();
+    public ResponseEntity<?> indexPage(String url) {
+        return indexingService.indexPage(url);
     }
 }

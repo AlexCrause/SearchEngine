@@ -8,5 +8,5 @@ public interface IndexingService {
 
     ResponseEntity<?> stopIndexing();
 
-    ResponseEntity<?> indexPage();
+    ResponseEntity<?> indexPage(String url);
 }

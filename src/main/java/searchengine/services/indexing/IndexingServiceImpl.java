@@ -103,7 +103,7 @@ public class IndexingServiceImpl implements IndexingService {
     }
 
     @Override
-    public ResponseEntity<?> indexPage() {
+    public synchronized ResponseEntity<?> indexPage(String url) {
         return null;
     }
 
@@ -113,6 +113,4 @@ public class IndexingServiceImpl implements IndexingService {
             System.out.println("ForkJoinPool shutdown");
         }
     }
-
-
 }
