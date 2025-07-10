@@ -12,11 +12,25 @@ public class Lemmatizer {
 
     private final HashMap<String, Integer> lemmatizedText = new HashMap<>();
 
-
     public HashMap<String, Integer> lemmatize(String text) throws IOException {
-
         return splitTextIntoWords(text);
     }
+    public String clearWebPageFromHtmlTags(String text) {
+        if (text == null) {
+            return "";
+        }
+        String regex = "<[^>]*>";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(text);
+        StringBuilder result = new StringBuilder();
+
+        while (matcher.find()) {
+            result.append(matcher.replaceAll(""));
+        }
+        return result.toString();
+    }
+
+
 
     private HashMap<String, Integer> splitTextIntoWords(String text) throws IOException {
         if (text == null || text.isEmpty()) {
@@ -34,11 +48,9 @@ public class Lemmatizer {
             hashMap = sortWordsByMorph(wordBaseForms);
         }
         return hashMap;
-
     }
 
     private HashMap<String, Integer> sortWordsByMorph(List<String> wordBaseForms) {
-
         for (String s : wordBaseForms) {
             if (!(s.contains("|l") || s.contains("|n") || s.contains("|f") || s.contains("|e") ||
                     (s.contains("|Y КР_ПРИЛ"))))
@@ -61,9 +73,7 @@ public class Lemmatizer {
             lemmatizedText.put(pureWord, 1);
         } else {
             lemmatizedText.put(pureWord, lemmatizedText.get(pureWord) + 1);
-
         }
         return lemmatizedText;
     }
-
 }

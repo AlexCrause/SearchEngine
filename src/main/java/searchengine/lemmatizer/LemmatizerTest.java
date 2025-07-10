@@ -15,6 +15,8 @@ public class LemmatizerTest {
         String text = "Повторное появление леопарда в Осетии позволяет предположить, " +
                 "что леопард постоянно обитает в некоторых районах Северного Кавказа.";
 
+        String html = "<div>Пример <b>текста</b></div>";
+
 //        LuceneMorphology luceneMorph = new RussianLuceneMorphology();
 //        List<String> wordBaseForms = luceneMorph.getNormalForms("леса");
 //        wordBaseForms.forEach(System.out::println);
@@ -38,6 +40,10 @@ public class LemmatizerTest {
             Integer value = stringIntegerEntry.getValue();
             System.out.println(key + " - " + value);
         }
+
+
+        String s = lemmatizer.clearWebPageFromHtmlTags(html);
+        System.out.println(s);
 
     }
 }
