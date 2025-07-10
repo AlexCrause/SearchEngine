@@ -7,4 +7,6 @@ public interface IndexingService {
     ResponseEntity<?> startIndexing();
 
     ResponseEntity<?> stopIndexing();
+
+    ResponseEntity<?> indexPage();
 }

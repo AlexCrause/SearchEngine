@@ -4,8 +4,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import searchengine.config.Site;
 import searchengine.config.SitesList;
-import searchengine.dto.statistics.IndexingResponse;
-import searchengine.dto.statistics.IndexingResponseError;
+import searchengine.dto.indexing.IndexingResponse;
+import searchengine.dto.indexing.IndexingResponseError;
 
 import java.util.Map;
 import java.util.concurrent.*;
@@ -102,10 +102,17 @@ public class IndexingServiceImpl implements IndexingService {
         return ResponseEntity.ok(response);
     }
 
+    @Override
+    public ResponseEntity<?> indexPage() {
+        return null;
+    }
+
     private void stopForkJoinPool() {
         if (forkJoinPool != null && !forkJoinPool.isShutdown()) {
             forkJoinPool.shutdown();
             System.out.println("ForkJoinPool shutdown");
         }
     }
+
+
 }
