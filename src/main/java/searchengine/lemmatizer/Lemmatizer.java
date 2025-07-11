@@ -1,7 +1,10 @@
 package searchengine.lemmatizer;
 
 import org.apache.lucene.morphology.LuceneMorphology;
+import org.apache.lucene.morphology.english.EnglishLuceneMorphology;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.util.*;
@@ -10,29 +13,26 @@ import java.util.regex.Pattern;
 
 public class Lemmatizer {
 
-    private final HashMap<String, Integer> lemmatizedText = new HashMap<>();
+    private static final HashMap<String, Integer> lemmatizedText = new HashMap<>();
 
-    public HashMap<String, Integer> lemmatize(String text) throws IOException {
+    public static HashMap<String, Integer> lemmatize(String text) throws IOException {
         return splitTextIntoWords(text);
     }
-    public String clearWebPageFromHtmlTags(String text) {
-        if (text == null) {
-            return "";
-        }
-        String regex = "<[^>]*>";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(text);
-        StringBuilder result = new StringBuilder();
 
-        while (matcher.find()) {
-            result.append(matcher.replaceAll(""));
-        }
-        return result.toString();
+    public static String clearWebPageFromHtmlTags(Document doc){
+        if (doc == null) return "";
+        String html = doc.html();
+        Document document = Jsoup.parse(html);
+        return document.text();
+    }
+    public static String clearWebPageFromHtmlTags(String html){
+        if (html == null) return "";
+        return Jsoup.parse(html).text();
     }
 
 
 
-    private HashMap<String, Integer> splitTextIntoWords(String text) throws IOException {
+    private static HashMap<String, Integer> splitTextIntoWords(String text) throws IOException {
         if (text == null || text.isEmpty()) {
             return null;
         }
@@ -44,13 +44,21 @@ public class Lemmatizer {
 
         while (matcher.find()) {
             LuceneMorphology luceneMorph1 = new RussianLuceneMorphology();
-            List<String> wordBaseForms = luceneMorph1.getMorphInfo(matcher.group().toLowerCase(Locale.ROOT));
-            hashMap = sortWordsByMorph(wordBaseForms);
+            LuceneMorphology luceneMorph2 = new EnglishLuceneMorphology();
+            System.out.println(matcher.group());
+            String lowerCase = matcher.group().toLowerCase(Locale.ROOT);
+            if (lowerCase.matches("[а-яА-ЯёЁ-]+")){
+                List<String> wordBaseForms = luceneMorph1.getMorphInfo(lowerCase);
+                hashMap = sortWordsByMorph(wordBaseForms);
+            } else if (lowerCase.matches("[a-zA-Z`-]+")){
+                List<String> wordBaseForms = luceneMorph2.getMorphInfo(lowerCase);
+                hashMap = sortWordsByMorph(wordBaseForms);
+            }
         }
         return hashMap;
     }
 
-    private HashMap<String, Integer> sortWordsByMorph(List<String> wordBaseForms) {
+    private static HashMap<String, Integer> sortWordsByMorph(List<String> wordBaseForms) {
         for (String s : wordBaseForms) {
             if (!(s.contains("|l") || s.contains("|n") || s.contains("|f") || s.contains("|e") ||
                     (s.contains("|Y КР_ПРИЛ"))))
@@ -61,14 +69,14 @@ public class Lemmatizer {
         return null;
     }
 
-    private HashMap<String, Integer> cutWord(String s) {
+    private static HashMap<String, Integer> cutWord(String s) {
         String pureWord = "";
         int index = s.indexOf('|');
         pureWord = s.substring(0, index);
         return assembleHashMapWords(pureWord);
     }
 
-    private HashMap<String, Integer> assembleHashMapWords(String pureWord) {
+    private static HashMap<String, Integer> assembleHashMapWords(String pureWord) {
         if (!lemmatizedText.containsKey(pureWord)) {
             lemmatizedText.put(pureWord, 1);
         } else {

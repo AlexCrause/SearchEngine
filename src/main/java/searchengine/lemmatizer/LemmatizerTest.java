@@ -2,6 +2,7 @@ package searchengine.lemmatizer;
 
 import org.apache.lucene.morphology.LuceneMorphology;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
+import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -16,6 +17,8 @@ public class LemmatizerTest {
                 "что леопард постоянно обитает в некоторых районах Северного Кавказа.";
 
         String html = "<div>Пример <b>текста</b></div>";
+
+
 
 //        LuceneMorphology luceneMorph = new RussianLuceneMorphology();
 //        List<String> wordBaseForms = luceneMorph.getNormalForms("леса");
@@ -33,8 +36,8 @@ public class LemmatizerTest {
 //        wordBaseForms1.forEach(System.out::println);
 
 
-        Lemmatizer lemmatizer = new Lemmatizer();
-        HashMap<String, Integer> lemmatize = lemmatizer.lemmatize(text);
+        //Lemmatizer lemmatizer = new Lemmatizer();
+        HashMap<String, Integer> lemmatize = Lemmatizer.lemmatize(text);
         for (Map.Entry<String, Integer> stringIntegerEntry : lemmatize.entrySet()) {
             String key = stringIntegerEntry.getKey();
             Integer value = stringIntegerEntry.getValue();
@@ -42,7 +45,7 @@ public class LemmatizerTest {
         }
 
 
-        String s = lemmatizer.clearWebPageFromHtmlTags(html);
+        String s = Lemmatizer.clearWebPageFromHtmlTags(html);
         System.out.println(s);
 
     }

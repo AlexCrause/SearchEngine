@@ -8,7 +8,6 @@ import searchengine.dto.indexing.IndexingResponse;
 import searchengine.dto.indexing.IndexingResponseError;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -53,6 +52,7 @@ public class IndexingServiceImpl implements IndexingService {
             String url = site.getUrl();
             String name = site.getName();
             System.out.println("Передаю url сайта в обработчик сайтов: " + url);
+
             executor.execute(() -> {
                 try {
                     ForkJoinTask<?> task = SiteCrawler.crawSite(url, name, siteIndexingService,
