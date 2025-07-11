@@ -1,5 +1,6 @@
 package searchengine.controllers;
 
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,7 +39,7 @@ public class ApiController {
     }
 
     @PostMapping("/indexPage")
-    public ResponseEntity<?> indexPage(String url) {
+    public ResponseEntity<?> indexPage(@Param("url") String url) {
         return indexingService.indexPage(url);
     }
 }

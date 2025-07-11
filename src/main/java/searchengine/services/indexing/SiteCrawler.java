@@ -63,7 +63,6 @@ public class SiteCrawler extends RecursiveTask<Set<String>> {
             task.get(2, TimeUnit.HOURS);
 
         } catch (TimeoutException e) {
-            //task.cancel(true);
             System.err.println("Превышено время индексации сайта: " + startUrl);
         } catch (Exception e) {
             throw new IllegalArgumentException("Неправильный URL: "

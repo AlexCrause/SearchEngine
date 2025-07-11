@@ -7,6 +7,8 @@ import searchengine.config.SitesList;
 import searchengine.dto.indexing.IndexingResponse;
 import searchengine.dto.indexing.IndexingResponseError;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -104,6 +106,28 @@ public class IndexingServiceImpl implements IndexingService {
 
     @Override
     public synchronized ResponseEntity<?> indexPage(String url) {
+
+        for (Site site : sites.getSites()) {
+            String urlSite = site.getUrl();
+            try {
+                String domainHost = UrlUtils.getDomainHost(urlSite);
+                System.out.println("domainHost: " + domainHost);
+                System.out.println("url: " + url);
+                if (url.contains(domainHost)) {
+                    IndexingPage.indexPage(url, pageIndexingService);
+                    IndexingResponse response = new IndexingResponse();
+                    response.setResult(true);
+                    return ResponseEntity.ok(response);
+                }
+                IndexingResponseError error = new IndexingResponseError();
+                error.setResult(false);
+                error.setError("Данная страница находится за пределами сайтов, " +
+                        "указанных в конфигурационном файле");
+                return ResponseEntity.ok(error);
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+        }
         return null;
     }
 

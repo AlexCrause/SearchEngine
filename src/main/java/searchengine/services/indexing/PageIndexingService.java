@@ -9,7 +9,9 @@ import searchengine.model.Site;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
 
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Optional;
 
 @Service
@@ -49,5 +51,21 @@ public class PageIndexingService {
             System.err.println("Ошибка при сохранении страницы: " + url + " | " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    public void saveHTMLPage(String url,
+                             Document doc) throws MalformedURLException, URISyntaxException {
+
+        String path = new URI(url).getPath();
+
+        Optional<Page> pageOptional= pageRepository.findPageByPath(path);
+        if (pageOptional.isEmpty()){
+            return;
+        }
+
+        Page page = pageOptional.get();
+        page.setContent(doc.html());
+
+        pageRepository.save(page);
     }
 }
