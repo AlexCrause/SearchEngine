@@ -1,13 +1,6 @@
-package searchengine.lemmatizer;
-
-import org.apache.lucene.morphology.LuceneMorphology;
-import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
-import org.jsoup.nodes.Document;
+package searchengine.services.lemmatizer;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class LemmatizerTest {
 
@@ -36,16 +29,10 @@ public class LemmatizerTest {
 //        wordBaseForms1.forEach(System.out::println);
 
 
-        //Lemmatizer lemmatizer = new Lemmatizer();
-        HashMap<String, Integer> lemmatize = Lemmatizer.lemmatize(text);
-        for (Map.Entry<String, Integer> stringIntegerEntry : lemmatize.entrySet()) {
-            String key = stringIntegerEntry.getKey();
-            Integer value = stringIntegerEntry.getValue();
-            System.out.println(key + " - " + value);
-        }
+        Lemmatizer lemmatizer = new Lemmatizer();
 
 
-        String s = Lemmatizer.clearWebPageFromHtmlTags(html);
+        String s = lemmatizer.clearWebPageFromHtmlTags(html);
         System.out.println(s);
 
     }

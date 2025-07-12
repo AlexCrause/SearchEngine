@@ -18,6 +18,8 @@ public class IndexingServiceImpl implements IndexingService {
     private final SitesList sites;
     private final SiteIndexingService siteIndexingService;
     private final PageIndexingService pageIndexingService;
+    private final LemmaIndexingService lemmaIndexingService;
+    private final IndexIndexingService indexIndexingService;
     private volatile boolean isIndexing = false;
     private final ExecutorService executor;
     private final Map<String, ForkJoinTask<?>> crawlingTasks = new ConcurrentHashMap<>();
@@ -26,10 +28,14 @@ public class IndexingServiceImpl implements IndexingService {
 
     public IndexingServiceImpl(SitesList sites,
                                SiteIndexingService siteIndexingService,
-                               PageIndexingService pageIndexingService) {
+                               PageIndexingService pageIndexingService,
+                               LemmaIndexingService lemmaIndexingService,
+                               IndexIndexingService indexIndexingService) {
         this.sites = sites;
         this.siteIndexingService = siteIndexingService;
         this.pageIndexingService = pageIndexingService;
+        this.lemmaIndexingService = lemmaIndexingService;
+        this.indexIndexingService = indexIndexingService;
         executor = Executors.newFixedThreadPool(sites.getSites().size());
         forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
     }
@@ -105,16 +111,19 @@ public class IndexingServiceImpl implements IndexingService {
     }
 
     @Override
-    public synchronized ResponseEntity<?> indexPage(String url) {
+    public synchronized ResponseEntity<?> indexPage(String urlPage) {
 
         for (Site site : sites.getSites()) {
             String urlSite = site.getUrl();
             try {
                 String domainHost = UrlUtils.getDomainHost(urlSite);
                 System.out.println("domainHost: " + domainHost);
-                System.out.println("url: " + url);
-                if (url.contains(domainHost)) {
-                    IndexingPage.indexPage(url, pageIndexingService);
+                System.out.println("urlPage: " + urlPage);
+                if (urlPage.contains(domainHost)) {
+
+                    IndexingPage.indexPage(urlPage, urlSite,
+                            pageIndexingService, siteIndexingService,
+                            lemmaIndexingService, indexIndexingService);
                     IndexingResponse response = new IndexingResponse();
                     response.setResult(true);
                     return ResponseEntity.ok(response);

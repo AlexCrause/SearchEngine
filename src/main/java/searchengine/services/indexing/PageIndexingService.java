@@ -35,8 +35,8 @@ public class PageIndexingService {
             System.out.println("path: " + path);
             Optional<String> pathOpt = pageRepository.findPathByPath(path);
             System.out.println(pathOpt);
-            if (pathOpt.isPresent()){
-               return;
+            if (pathOpt.isPresent()) {
+                return;
             }
 
             Page page = new Page();
@@ -53,13 +53,14 @@ public class PageIndexingService {
         }
     }
 
-    public void saveHTMLPage(String url,
-                             Document doc) throws MalformedURLException, URISyntaxException {
+    @Transactional
+    void saveHTMLPage(String url,
+                      Document doc) throws MalformedURLException, URISyntaxException {
 
         String path = new URI(url).getPath();
 
-        Optional<Page> pageOptional= pageRepository.findPageByPath(path);
-        if (pageOptional.isEmpty()){
+        Optional<Page> pageOptional = pageRepository.findPageByPath(path);
+        if (pageOptional.isEmpty()) {
             return;
         }
 

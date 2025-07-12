@@ -31,6 +31,7 @@ public class SiteIndexingService {
         siteRepository.save(site);
     }
 
+    @Transactional
     private void removeSiteData(String normalizedWithWWW) {
         pageRepository.deletePagesBySiteUrl(normalizedWithWWW);
         siteRepository.deleteSiteByUrl(normalizedWithWWW);
@@ -48,12 +49,14 @@ public class SiteIndexingService {
 
     }
 
-    public void updateSiteStatus(String baseHost) throws MalformedURLException {
+    @Transactional
+    void updateSiteStatus(String baseHost) throws MalformedURLException {
         String urlWithWWW = UrlUtils.normalizeUrlWithWWW(baseHost);
         siteRepository.updateStatusByUrl(urlWithWWW, Status.INDEXED);
     }
 
-    public void updateSiteLastError() {
+    @Transactional
+    void updateSiteLastError() {
         for (Site site : siteRepository.findAll()) {
             site.setStatus(Status.FAILED);
             site.setStatusTime(new Date());
