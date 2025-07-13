@@ -1,4 +1,4 @@
-package searchengine.services.indexing;
+package searchengine.services.indexing.site_indexing;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -6,6 +6,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import searchengine.config.AppConfig;
+import searchengine.services.indexing.UrlUtils;
+import searchengine.services.indexing.page_indexing.PageIndexingService;
 
 import java.io.IOException;
 import java.net.MalformedURLException;

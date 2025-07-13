@@ -1,15 +1,19 @@
-package searchengine.services.lemmatizer;
+package searchengine.services.indexing.lemma_indexing;
 
 import org.apache.lucene.morphology.LuceneMorphology;
 import org.apache.lucene.morphology.english.EnglishLuceneMorphology;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import searchengine.model.Lemma;
+import searchengine.model.Page;
 import searchengine.services.indexing.IndexIndexingService;
-import searchengine.services.indexing.LemmaIndexingService;
-import searchengine.services.indexing.SiteIndexingService;
+import searchengine.services.indexing.page_indexing.PageIndexingService;
+import searchengine.services.indexing.site_indexing.SiteIndexingService;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,6 +31,7 @@ public class Lemmatizer {
     public Lemmatizer(String urlSite,
                       String urlPage,
                       SiteIndexingService siteIndexingService,
+                      PageIndexingService pageIndexingService,
                       LemmaIndexingService lemmaIndexingService,
                       IndexIndexingService indexIndexingService) {
         this.urlSite = urlSite;
@@ -104,7 +109,17 @@ public class Lemmatizer {
         } else {
             lemmatizedText.put(lemma, lemmatizedText.get(lemma) + 1);
         }
-        lemmaIndexingService.saveLemmaToDB(lemma, urlSite);
+        saveToDB(lemma);
         return lemmatizedText;
+    }
+
+    private void saveToDB(String lemma) {
+        try {
+            String pathPage = new URL(urlPage).getPath();
+            lemmaIndexingService.saveLemmaToDB(lemma, urlSite, pathPage);
+            indexIndexingService.saveIndexToDB(lemma, urlSite, pathPage);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

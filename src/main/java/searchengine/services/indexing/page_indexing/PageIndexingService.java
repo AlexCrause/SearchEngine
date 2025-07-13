@@ -1,4 +1,4 @@
-package searchengine.services.indexing;
+package searchengine.services.indexing.page_indexing;
 
 import lombok.RequiredArgsConstructor;
 import org.jsoup.nodes.Document;
@@ -8,6 +8,7 @@ import searchengine.model.Page;
 import searchengine.model.Site;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
+import searchengine.services.indexing.UrlUtils;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -22,10 +23,10 @@ public class PageIndexingService {
     private final PageRepository pageRepository;
 
     @Transactional
-    void findSiteIdAndSavePages(String url,
-                                Document doc,
-                                String domain,
-                                int statusCode) {
+    public void findSiteIdAndSavePages(String url,
+                                       Document doc,
+                                       String domain,
+                                       int statusCode) {
         try {
             String siteUrlWithWWW = UrlUtils.normalizeUrlWithWWW(domain);
             Optional<Site> siteOpt = siteRepository.findSiteByUrl(siteUrlWithWWW);
@@ -54,8 +55,8 @@ public class PageIndexingService {
     }
 
     @Transactional
-    void saveHTMLPage(String url,
-                      Document doc) throws MalformedURLException, URISyntaxException {
+    public void saveHTMLPage(String url,
+                             Document doc) throws MalformedURLException, URISyntaxException {
 
         String path = new URI(url).getPath();
 

@@ -6,6 +6,11 @@ import searchengine.config.Site;
 import searchengine.config.SitesList;
 import searchengine.dto.indexing.IndexingResponse;
 import searchengine.dto.indexing.IndexingResponseError;
+import searchengine.services.indexing.lemma_indexing.LemmaIndexingService;
+import searchengine.services.indexing.page_indexing.IndexingPage;
+import searchengine.services.indexing.page_indexing.PageIndexingService;
+import searchengine.services.indexing.site_indexing.SiteCrawler;
+import searchengine.services.indexing.site_indexing.SiteIndexingService;
 
 import java.net.MalformedURLException;
 import java.util.Map;

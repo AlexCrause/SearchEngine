@@ -1,4 +1,4 @@
-package searchengine.services.indexing;
+package searchengine.services.indexing.site_indexing;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -7,6 +7,7 @@ import searchengine.model.Site;
 import searchengine.model.Status;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
+import searchengine.services.indexing.UrlUtils;
 
 import java.net.MalformedURLException;
 import java.util.Date;
@@ -50,13 +51,13 @@ public class SiteIndexingService {
     }
 
     @Transactional
-    void updateSiteStatus(String baseHost) throws MalformedURLException {
+    public void updateSiteStatus(String baseHost) throws MalformedURLException {
         String urlWithWWW = UrlUtils.normalizeUrlWithWWW(baseHost);
         siteRepository.updateStatusByUrl(urlWithWWW, Status.INDEXED);
     }
 
     @Transactional
-    void updateSiteLastError() {
+    public void updateSiteLastError() {
         for (Site site : siteRepository.findAll()) {
             site.setStatus(Status.FAILED);
             site.setStatusTime(new Date());

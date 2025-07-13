@@ -1,4 +1,4 @@
-package searchengine.services.lemmatizer;
+package searchengine.services.indexing.lemma_indexing;
 
 import java.io.IOException;
 

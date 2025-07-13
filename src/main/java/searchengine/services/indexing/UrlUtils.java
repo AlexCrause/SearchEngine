@@ -7,7 +7,7 @@ import java.text.Normalizer;
 public class UrlUtils {
 
 
-    static String normalizeUrlWithWWW(String url) throws MalformedURLException {
+    public static String normalizeUrlWithWWW(String url) throws MalformedURLException {
         if (!url.startsWith("http://") && !url.startsWith("https://")) {
             url = "https://" + url;
         }
@@ -19,19 +19,19 @@ public class UrlUtils {
         return u.getProtocol() + "://" + host + (u.getPath().isEmpty() ? "/" : u.getPath());
     }
 
-    static String normalizeUrl(String url) {
+    public static String normalizeUrl(String url) {
         if (url == null || url.isBlank()) return "";
         String normalize = url.split("#")[0];
         if (!normalize.endsWith("/")) normalize += "/";
         return normalize.replaceAll("(?<!:)/+", "/");
     }
 
-    static String getDomainHost(String url) throws MalformedURLException {
+    public static String getDomainHost(String url) throws MalformedURLException {
         String host = new URL(url).getHost();
         return host.startsWith("www.") ? host.substring(4) : host;
     }
 
-    static String cleanContent(String content) {
+    public static String cleanContent(String content) {
         if (content == null) {
             return null;
         }
