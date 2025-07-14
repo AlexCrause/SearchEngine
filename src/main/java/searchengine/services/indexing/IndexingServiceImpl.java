@@ -24,7 +24,6 @@ public class IndexingServiceImpl implements IndexingService {
     private final SiteIndexingService siteIndexingService;
     private final PageIndexingService pageIndexingService;
     private final LemmaIndexingService lemmaIndexingService;
-    private final IndexIndexingService indexIndexingService;
     private volatile boolean isIndexing = false;
     private final ExecutorService executor;
     private final Map<String, ForkJoinTask<?>> crawlingTasks = new ConcurrentHashMap<>();
@@ -34,13 +33,11 @@ public class IndexingServiceImpl implements IndexingService {
     public IndexingServiceImpl(SitesList sites,
                                SiteIndexingService siteIndexingService,
                                PageIndexingService pageIndexingService,
-                               LemmaIndexingService lemmaIndexingService,
-                               IndexIndexingService indexIndexingService) {
+                               LemmaIndexingService lemmaIndexingService) {
         this.sites = sites;
         this.siteIndexingService = siteIndexingService;
         this.pageIndexingService = pageIndexingService;
         this.lemmaIndexingService = lemmaIndexingService;
-        this.indexIndexingService = indexIndexingService;
         executor = Executors.newFixedThreadPool(sites.getSites().size());
         forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
     }
@@ -128,7 +125,7 @@ public class IndexingServiceImpl implements IndexingService {
 
                     IndexingPage.indexPage(urlPage, urlSite,
                             pageIndexingService, siteIndexingService,
-                            lemmaIndexingService, indexIndexingService);
+                            lemmaIndexingService);
                     IndexingResponse response = new IndexingResponse();
                     response.setResult(true);
                     return ResponseEntity.ok(response);

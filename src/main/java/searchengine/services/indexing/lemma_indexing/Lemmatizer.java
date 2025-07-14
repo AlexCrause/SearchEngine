@@ -5,9 +5,6 @@ import org.apache.lucene.morphology.english.EnglishLuceneMorphology;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import searchengine.model.Lemma;
-import searchengine.model.Page;
-import searchengine.services.indexing.IndexIndexingService;
 import searchengine.services.indexing.page_indexing.PageIndexingService;
 import searchengine.services.indexing.site_indexing.SiteIndexingService;
 
@@ -25,20 +22,17 @@ public class Lemmatizer {
     private final HashMap<String, Integer> lemmatizedText = new HashMap<>();
     private SiteIndexingService siteIndexingService;
     private LemmaIndexingService lemmaIndexingService;
-    private IndexIndexingService indexIndexingService;
 
 
     public Lemmatizer(String urlSite,
                       String urlPage,
                       SiteIndexingService siteIndexingService,
                       PageIndexingService pageIndexingService,
-                      LemmaIndexingService lemmaIndexingService,
-                      IndexIndexingService indexIndexingService) {
+                      LemmaIndexingService lemmaIndexingService) {
         this.urlSite = urlSite;
         this.urlPage = urlPage;
         this.siteIndexingService = siteIndexingService;
         this.lemmaIndexingService = lemmaIndexingService;
-        this.indexIndexingService = indexIndexingService;
     }
 
     public Lemmatizer(){}
@@ -73,7 +67,6 @@ public class Lemmatizer {
         while (matcher.find()) {
             LuceneMorphology luceneMorph1 = new RussianLuceneMorphology();
             LuceneMorphology luceneMorph2 = new EnglishLuceneMorphology();
-            System.out.println(matcher.group());
             String lowerCase = matcher.group().toLowerCase(Locale.ROOT);
             if (lowerCase.matches("[а-яА-ЯёЁ-]+")) {
                 List<String> wordBaseForms = luceneMorph1.getMorphInfo(lowerCase);
@@ -97,6 +90,7 @@ public class Lemmatizer {
     }
 
     private HashMap<String, Integer> cutWord(String s) {
+        System.out.println(s);
         String pureWord = "";
         int index = s.indexOf('|');
         pureWord = s.substring(0, index);
@@ -117,7 +111,6 @@ public class Lemmatizer {
         try {
             String pathPage = new URL(urlPage).getPath();
             lemmaIndexingService.saveLemmaToDB(lemma, urlSite, pathPage);
-            indexIndexingService.saveIndexToDB(lemma, urlSite, pathPage);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }

@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.model.Page;
+import searchengine.model.Site;
 
 import java.util.Optional;
 
@@ -21,6 +22,10 @@ public interface PageRepository extends JpaRepository<Page, Integer> {
     @Query("DELETE FROM Page p WHERE p.siteId.id IN (SELECT s.id FROM Site s WHERE s.url = :url)")
     void deletePagesBySiteUrl(@Param("url") String url);
 
-    @Transactional
+    @Query("SELECT p FROM Page p WHERE p.path = :path AND p.siteId = :siteId")
+    Optional<Page> findPageByPathAndSiteId(String path, Site siteId);
+
+
+    @Query("SELECT p FROM Page p WHERE p.path = :path")
     Optional<Page> findPageByPath(String path);
 }
