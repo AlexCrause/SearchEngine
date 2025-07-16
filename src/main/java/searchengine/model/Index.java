@@ -19,12 +19,12 @@ public class Index {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "page_id", nullable = false)
-    //@JsonBackReference
+    @JsonBackReference
     private Page pageId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lemma_id", nullable = false)
-    //@JsonBackReference
+    @JsonBackReference
     private Lemma lemmaId;
 
     @Column(name = "`rank`", nullable = false)

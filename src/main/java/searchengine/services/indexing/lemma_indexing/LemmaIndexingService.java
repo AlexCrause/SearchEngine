@@ -13,6 +13,7 @@ import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
 import searchengine.services.indexing.UrlUtils;
 
+import java.net.MalformedURLException;
 import java.util.Optional;
 
 @Service
@@ -27,10 +28,13 @@ public class LemmaIndexingService {
     @Transactional
     public void saveLemmaToDB(String lemmaWord,
                               String urlSite,
-                              String pathPage) {
+                              String pathPage) throws MalformedURLException {
 
         String normalizeUrl = UrlUtils.normalizeUrl(urlSite);
-        Optional<Site> siteByUrl = siteRepository.findSiteByUrl(normalizeUrl);
+        String urlWithWWW = UrlUtils.normalizeUrlWithWWW(normalizeUrl);
+        System.out.println("UrlSiteWithWWW = " + urlWithWWW);
+        Optional<Site> siteByUrl = siteRepository.findSiteByUrl(urlWithWWW);
+        System.out.println(siteByUrl);
         if (siteByUrl.isEmpty()) return;
 
         Optional<Page> pageOpt = pageRepository.findPageByPathAndSiteId(pathPage, siteByUrl.get());

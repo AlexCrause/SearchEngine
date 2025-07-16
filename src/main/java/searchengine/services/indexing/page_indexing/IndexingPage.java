@@ -6,7 +6,6 @@ import org.jsoup.nodes.Document;
 import searchengine.config.AppConfig;
 import searchengine.services.indexing.lemma_indexing.LemmaIndexingService;
 import searchengine.services.indexing.lemma_indexing.Lemmatizer;
-import searchengine.services.indexing.site_indexing.SiteIndexingService;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -18,7 +17,6 @@ public class IndexingPage {
     public static void indexPage(String urlPage,
                                  String urlSite,
                                  PageIndexingService pageIndexingService,
-                                 SiteIndexingService siteIndexingService,
                                  LemmaIndexingService lemmaIndexingService) {
         try {
             Connection.Response response = Jsoup.connect(urlPage)
@@ -29,12 +27,11 @@ public class IndexingPage {
 
             pageIndexingService.saveHTMLPage(urlPage, document);
 
-
+            System.out.println("URLSite " + urlSite);
+            System.out.println("URLPage " + urlPage);
             Lemmatizer lemmatizer = new Lemmatizer(
                     urlSite,
                     urlPage,
-                    siteIndexingService,
-                    pageIndexingService,
                     lemmaIndexingService);
             String stringRes = lemmatizer.clearWebPageFromHtmlTags(document);
             System.out.println(stringRes);

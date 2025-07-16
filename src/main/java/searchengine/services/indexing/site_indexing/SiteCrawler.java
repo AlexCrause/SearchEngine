@@ -7,6 +7,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import searchengine.config.AppConfig;
 import searchengine.services.indexing.UrlUtils;
+import searchengine.services.indexing.lemma_indexing.LemmaIndexingService;
+import searchengine.services.indexing.lemma_indexing.Lemmatizer;
 import searchengine.services.indexing.page_indexing.PageIndexingService;
 
 import java.io.IOException;
@@ -19,27 +21,33 @@ import java.util.concurrent.*;
 public class SiteCrawler extends RecursiveTask<Set<String>> {
 
     private final String url;
+    private final String name;
     private final String domainHost;
     private final int depth;
     private final int maxDepth;
     private final Set<String> visitedUrls;
     private final PageIndexingService pageIndexingService;
     private final SiteIndexingService siteIndexingService;
+    private final LemmaIndexingService lemmaIndexingService;
 
     public SiteCrawler(String url,
+                       String name,
                        String domainHost,
                        int depth,
                        int maxDepth,
                        Set<String> visitedUrls,
                        PageIndexingService pageIndexingService,
-                       SiteIndexingService siteIndexingService) {
+                       SiteIndexingService siteIndexingService,
+                       LemmaIndexingService lemmaIndexingService) {
         this.url = url;
+        this.name = name;
         this.domainHost = domainHost;
         this.depth = depth;
         this.maxDepth = maxDepth;
         this.visitedUrls = visitedUrls;
         this.pageIndexingService = pageIndexingService;
         this.siteIndexingService = siteIndexingService;
+        this.lemmaIndexingService = lemmaIndexingService;
     }
 
     public static ForkJoinTask<?> crawSite(String startUrl,
@@ -47,20 +55,22 @@ public class SiteCrawler extends RecursiveTask<Set<String>> {
                                            SiteIndexingService siteIndexingService,
                                            PageIndexingService pageIndexingService,
                                            Map<String, ForkJoinTask<?>> tasksMap,
-                                           ForkJoinPool fjpool) {
+                                           ForkJoinPool fjpool,
+                                           LemmaIndexingService lemmaIndexingService) {
 
         int maxDepth = 1;
         ForkJoinTask<Set<String>> task = null;
         try {
-            String normalizedStartUrl = UrlUtils.normalizeUrl(startUrl); //с www.
+            String normalizedStartUrl = UrlUtils.normalizeUrl(startUrl); //    со / на конце
             String baseHost = UrlUtils.getDomainHost(normalizedStartUrl); //без www.
 
             siteIndexingService.writeToDb(normalizedStartUrl, name);
 
             Set<String> visitedUrls = ConcurrentHashMap.newKeySet();
 
-            task = fjpool.submit(new SiteCrawler(normalizedStartUrl, baseHost,
-                    0, maxDepth, visitedUrls, pageIndexingService, siteIndexingService));
+            task = fjpool.submit(new SiteCrawler(normalizedStartUrl, name, baseHost,
+                    0, maxDepth, visitedUrls,
+                    pageIndexingService, siteIndexingService, lemmaIndexingService));
             tasksMap.put(baseHost, task);
             task.get(2, TimeUnit.HOURS);
 
@@ -93,11 +103,23 @@ public class SiteCrawler extends RecursiveTask<Set<String>> {
             if (isCancelled() || Thread.currentThread().isInterrupted()) return Collections.emptySet();
 
             int statusCode = response.statusCode();
+            if (statusCode != 200) {
+                return Collections.emptySet();
+            }
             Document doc = response.parse();
             Elements links = doc.select("a[href]");
 
             siteIndexingService.updateSiteStatusTime(domainHost);
             pageIndexingService.findSiteIdAndSavePages(url, doc, domainHost, statusCode);
+
+            System.out.println("URL: " + url);
+
+            String siteUrl = UrlUtils.getSiteUrl(url);
+            System.out.println("Site URL: " + siteUrl);
+
+            Lemmatizer lemmatizer = new Lemmatizer(siteUrl, url, lemmaIndexingService);
+            String stringWithoutTags = lemmatizer.clearWebPageFromHtmlTags(doc);
+            lemmatizer.lemmatize(stringWithoutTags);
 
             if (isCancelled() || Thread.currentThread().isInterrupted()) return Collections.emptySet();
             parseDocument(links);
@@ -140,8 +162,9 @@ public class SiteCrawler extends RecursiveTask<Set<String>> {
             String linkHost = UrlUtils.getDomainHost(nextUrl);
             if (!linkHost.equals(domainHost)) continue;
 
-            subTasks.add(new SiteCrawler(nextUrl, domainHost, depth + 1,
-                    maxDepth, visitedUrls, pageIndexingService, siteIndexingService));
+            subTasks.add(new SiteCrawler(nextUrl, name, domainHost, depth + 1,
+                    maxDepth, visitedUrls,
+                    pageIndexingService, siteIndexingService, lemmaIndexingService));
         }
         recursiveInvokeAll(subTasks);
     }

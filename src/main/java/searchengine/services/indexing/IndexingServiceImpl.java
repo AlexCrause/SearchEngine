@@ -64,7 +64,7 @@ public class IndexingServiceImpl implements IndexingService {
             executor.execute(() -> {
                 try {
                     ForkJoinTask<?> task = SiteCrawler.crawSite(url, name, siteIndexingService,
-                            pageIndexingService, crawlingTasks, forkJoinPool);
+                            pageIndexingService, crawlingTasks, forkJoinPool, lemmaIndexingService);
                     crawlingTasks.put(url, task);
                     if (task.isDone()) {
                         System.out.println("Сайт успешно проиндексирован");
@@ -124,7 +124,7 @@ public class IndexingServiceImpl implements IndexingService {
                 if (urlPage.contains(domainHost)) {
 
                     IndexingPage.indexPage(urlPage, urlSite,
-                            pageIndexingService, siteIndexingService,
+                            pageIndexingService,
                             lemmaIndexingService);
                     IndexingResponse response = new IndexingResponse();
                     response.setResult(true);

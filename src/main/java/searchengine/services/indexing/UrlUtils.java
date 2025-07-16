@@ -31,6 +31,13 @@ public class UrlUtils {
         return host.startsWith("www.") ? host.substring(4) : host;
     }
 
+    public static String getSiteUrl(String url) throws MalformedURLException {
+        String urlSite = "";
+        String protocol = new URL(url).getProtocol();
+        String host = new URL(url).getHost();
+        return urlSite = protocol + "://" + host + "/";
+    }
+
     public static String cleanContent(String content) {
         if (content == null) {
             return null;

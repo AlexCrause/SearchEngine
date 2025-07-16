@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.model.Page;
 import searchengine.model.Site;
+import searchengine.repositories.IndexRepository;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
 import searchengine.services.indexing.UrlUtils;
@@ -33,10 +34,8 @@ public class PageIndexingService {
             if (siteOpt.isEmpty()) return;
 
             String path = new URI(url).getPath();
-            System.out.println("path: " + path);
-            Optional<String> pathOpt = pageRepository.findPathByPath(path);
-            System.out.println(pathOpt);
-            if (pathOpt.isPresent()) {
+            Optional<Page> pageOpt = pageRepository.findPageByPathAndSiteId(path, siteOpt.get());
+            if (pageOpt.isPresent()) {
                 return;
             }
 

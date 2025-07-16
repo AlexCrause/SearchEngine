@@ -5,8 +5,6 @@ import org.apache.lucene.morphology.english.EnglishLuceneMorphology;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import searchengine.services.indexing.page_indexing.PageIndexingService;
-import searchengine.services.indexing.site_indexing.SiteIndexingService;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -20,18 +18,14 @@ public class Lemmatizer {
     private String urlSite;
     private String urlPage;
     private final HashMap<String, Integer> lemmatizedText = new HashMap<>();
-    private SiteIndexingService siteIndexingService;
     private LemmaIndexingService lemmaIndexingService;
 
 
     public Lemmatizer(String urlSite,
                       String urlPage,
-                      SiteIndexingService siteIndexingService,
-                      PageIndexingService pageIndexingService,
                       LemmaIndexingService lemmaIndexingService) {
         this.urlSite = urlSite;
         this.urlPage = urlPage;
-        this.siteIndexingService = siteIndexingService;
         this.lemmaIndexingService = lemmaIndexingService;
     }
 
@@ -59,14 +53,15 @@ public class Lemmatizer {
             return null;
         }
         HashMap<String, Integer> hashMap = new HashMap<>();
+
         String regex = "[а-яА-ЯёЁa-zA-Z`-]+";
-
         Pattern pattern = Pattern.compile(regex);
-
         Matcher matcher = pattern.matcher(text);
+
+        LuceneMorphology luceneMorph1 = new RussianLuceneMorphology();
+        LuceneMorphology luceneMorph2 = new EnglishLuceneMorphology();
+
         while (matcher.find()) {
-            LuceneMorphology luceneMorph1 = new RussianLuceneMorphology();
-            LuceneMorphology luceneMorph2 = new EnglishLuceneMorphology();
             String lowerCase = matcher.group().toLowerCase(Locale.ROOT);
             if (lowerCase.matches("[а-яА-ЯёЁ-]+")) {
                 List<String> wordBaseForms = luceneMorph1.getMorphInfo(lowerCase);
@@ -91,6 +86,9 @@ public class Lemmatizer {
 
     private HashMap<String, Integer> cutWord(String s) {
         System.out.println(s);
+        System.out.println("Thread : " + Thread.currentThread().getName()
+                + ", URLPage : " + urlPage
+                + ", URLSite : " + urlSite);
         String pureWord = "";
         int index = s.indexOf('|');
         pureWord = s.substring(0, index);

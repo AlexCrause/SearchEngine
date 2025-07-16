@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.model.Site;
 import searchengine.model.Status;
+import searchengine.repositories.IndexRepository;
+import searchengine.repositories.LemmaRepository;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
 import searchengine.services.indexing.UrlUtils;
@@ -18,10 +20,12 @@ public class SiteIndexingService {
 
     private final SiteRepository siteRepository;
     private final PageRepository pageRepository;
+    private final LemmaRepository lemmaRepository;
+    private final IndexRepository indexRepository;
 
     @Transactional
     void writeToDb(String startUrl, String name) throws MalformedURLException {
-        String normalizedWithWWW = UrlUtils.normalizeUrlWithWWW(startUrl);
+        String normalizedWithWWW = UrlUtils.normalizeUrlWithWWW(startUrl); //    с www и / в конце
         removeSiteData(normalizedWithWWW);
 
         Site site = new Site();
@@ -34,20 +38,16 @@ public class SiteIndexingService {
 
     @Transactional
     private void removeSiteData(String normalizedWithWWW) {
+        indexRepository.deleteAll();
         pageRepository.deletePagesBySiteUrl(normalizedWithWWW);
+        lemmaRepository.deleteAll();
         siteRepository.deleteSiteByUrl(normalizedWithWWW);
     }
 
     @Transactional
     void updateSiteStatusTime(String domain) throws MalformedURLException {
-
         String urlWithWWW = UrlUtils.normalizeUrlWithWWW(domain);
-
-//        if (siteRepository.existsByUrl(urlWithWWW)) {
-//            siteRepository.updateStatusTimeByUrl(urlWithWWW);
-//        }
         siteRepository.updateStatusTimeByUrl(urlWithWWW);
-
     }
 
     @Transactional
