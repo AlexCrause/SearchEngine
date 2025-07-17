@@ -103,15 +103,15 @@ public class SiteCrawler extends RecursiveTask<Set<String>> {
             if (isCancelled() || Thread.currentThread().isInterrupted()) return Collections.emptySet();
 
             int statusCode = response.statusCode();
-            if (statusCode != 200) {
-                return Collections.emptySet();
-            }
+
             Document doc = response.parse();
             Elements links = doc.select("a[href]");
 
             siteIndexingService.updateSiteStatusTime(domainHost);
             pageIndexingService.findSiteIdAndSavePages(url, doc, domainHost, statusCode);
-
+            if (statusCode != 200) {
+                return Collections.emptySet();
+            }
             System.out.println("URL: " + url);
 
             String siteUrl = UrlUtils.getSiteUrl(url);

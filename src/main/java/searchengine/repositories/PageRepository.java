@@ -32,4 +32,7 @@ public interface PageRepository extends JpaRepository<Page, Integer> {
 
     @Query("DELETE FROM Page p WHERE p.id = :id AND p.path = :path AND p.siteId = :siteId")
     void deletePageByIdAndPathAndSiteId(Integer id, String path, Site site);
+
+    @Query("SELECT COUNT(p) FROM Page p WHERE p.siteId = :siteId")
+    Optional<Integer> countPagesBySite(Site siteId);
 }
