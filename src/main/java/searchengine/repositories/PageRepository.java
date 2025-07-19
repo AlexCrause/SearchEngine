@@ -14,9 +14,6 @@ import java.util.Optional;
 @Repository
 public interface PageRepository extends JpaRepository<Page, Integer> {
 
-    @Query(value = "SELECT path FROM Page WHERE path = ?1", nativeQuery = true)
-    Optional<String> findPathByPath(String path);
-
     @Transactional
     @Modifying
     @Query("DELETE FROM Page p WHERE p.siteId.id IN (SELECT s.id FROM Site s WHERE s.url = :url)")
@@ -28,10 +25,6 @@ public interface PageRepository extends JpaRepository<Page, Integer> {
 
     @Query("SELECT p FROM Page p WHERE p.path = :path")
     Optional<Page> findPageByPath(String path);
-
-
-    @Query("DELETE FROM Page p WHERE p.id = :id AND p.path = :path AND p.siteId = :siteId")
-    void deletePageByIdAndPathAndSiteId(Integer id, String path, Site site);
 
     @Query("SELECT COUNT(p) FROM Page p WHERE p.siteId = :siteId")
     Optional<Integer> countPagesBySite(Site siteId);

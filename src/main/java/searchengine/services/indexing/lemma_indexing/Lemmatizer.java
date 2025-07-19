@@ -10,29 +10,88 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
-import java.util.regex.Matcher;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 public class Lemmatizer {
 
     private String urlSite;
     private String urlPage;
-    private final HashMap<String, Integer> lemmatizedText = new HashMap<>();
     private LemmaIndexingService lemmaIndexingService;
+
+    private final LuceneMorphology luceneMorph1 = new RussianLuceneMorphology();
+    private final LuceneMorphology luceneMorph2 = new EnglishLuceneMorphology();
+
+    private static final Pattern WORD_PATTERN = Pattern.compile("[а-яА-ЯёЁa-zA-Z`-]+");
+
+    private final Map<String, Integer> lemmatizedText = new ConcurrentHashMap<>();
+    private final Map<String, String> lemmaCache = new ConcurrentHashMap<>();
+
 
 
     public Lemmatizer(String urlSite,
                       String urlPage,
-                      LemmaIndexingService lemmaIndexingService) {
+                      LemmaIndexingService lemmaIndexingService) throws IOException {
         this.urlSite = urlSite;
         this.urlPage = urlPage;
         this.lemmaIndexingService = lemmaIndexingService;
     }
 
-    public Lemmatizer(){}
+    public Lemmatizer() throws IOException {
+    }
 
-    public HashMap<String, Integer> lemmatize(String text) throws IOException {
-        return splitTextIntoWords(text);
+    public Map<String, Integer> lemmatize(String text) throws IOException {
+        processText(text);
+        saveLemmasToDB();
+        return lemmatizedText;
+    }
+
+    private void processText(String text) {
+        if (text == null || text.isEmpty()) return;
+
+        WORD_PATTERN.matcher(text).results()
+                .map(match -> match.group().toLowerCase(Locale.ROOT))
+                .forEach(lowerCase -> {
+                    String lemma = lemmaCache.computeIfAbsent(lowerCase, this::getLemma);
+                    if (lemma != null) {
+                        lemmatizedText.merge(lemma, 1, Integer::sum);
+                    }
+                });
+    }
+
+    private String getLemma(String word) {
+        try {
+            LuceneMorphology morphology = word.matches("[а-яё-]+") ? luceneMorph1 : luceneMorph2;
+            return morphology.getMorphInfo(word).stream()
+                    .filter(this::isAllowedPartOfSpeech)
+                    .findFirst()
+                    .map(this::extractLemma)
+                    .orElse(null);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private boolean isAllowedPartOfSpeech(String morphInfo) {
+        return !(morphInfo.contains("|l") || morphInfo.contains("|n") ||
+                morphInfo.contains("|f") || morphInfo.contains("|e") ||
+                morphInfo.contains("|Y КР_ПРИЛ") || morphInfo.contains("|o"));
+    }
+
+    private String extractLemma(String morphInfo) {
+        int index = morphInfo.indexOf('|');
+        return index > 0 ? morphInfo.substring(0, index) : morphInfo;
+    }
+
+    private void saveLemmasToDB() {
+        if (lemmaIndexingService == null || lemmatizedText.isEmpty()) return;
+
+        try {
+            String pathPage = new URL(urlPage).getPath();
+            lemmaIndexingService.saveLemmasBatch(urlSite, pathPage, lemmatizedText);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public String clearWebPageFromHtmlTags(Document doc) {
@@ -45,72 +104,5 @@ public class Lemmatizer {
     public String clearWebPageFromHtmlTags(String html) {
         if (html == null) return "";
         return Jsoup.parse(html).text();
-    }
-
-
-    private HashMap<String, Integer> splitTextIntoWords(String text) throws IOException {
-        if (text == null || text.isEmpty()) {
-            return null;
-        }
-        HashMap<String, Integer> hashMap = new HashMap<>();
-
-        String regex = "[а-яА-ЯёЁa-zA-Z`-]+";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(text);
-
-        LuceneMorphology luceneMorph1 = new RussianLuceneMorphology();
-        LuceneMorphology luceneMorph2 = new EnglishLuceneMorphology();
-
-        while (matcher.find()) {
-            String lowerCase = matcher.group().toLowerCase(Locale.ROOT);
-            if (lowerCase.matches("[а-яА-ЯёЁ-]+")) {
-                List<String> wordBaseForms = luceneMorph1.getMorphInfo(lowerCase);
-                hashMap = sortWordsByMorph(wordBaseForms);
-            } else if (lowerCase.matches("[a-zA-Z`-]+")) {
-                List<String> wordBaseForms = luceneMorph2.getMorphInfo(lowerCase);
-                hashMap = sortWordsByMorph(wordBaseForms);
-            }
-        }
-        return hashMap;
-    }
-
-    private HashMap<String, Integer> sortWordsByMorph(List<String> wordBaseForms) {
-        for (String s : wordBaseForms) {
-            if (!(s.contains("|l") || s.contains("|n") || s.contains("|f") || s.contains("|e") ||
-                    (s.contains("|Y КР_ПРИЛ") || s.contains("|o")))) {
-                return cutWord(s);
-            }
-        }
-        return null;
-    }
-
-    private HashMap<String, Integer> cutWord(String s) {
-        System.out.println(s);
-        System.out.println("Thread : " + Thread.currentThread().getName()
-                + ", URLPage : " + urlPage
-                + ", URLSite : " + urlSite);
-        String pureWord = "";
-        int index = s.indexOf('|');
-        pureWord = s.substring(0, index);
-        return assembleHashMapWords(pureWord);
-    }
-
-    private HashMap<String, Integer> assembleHashMapWords(String lemma) {
-        if (!lemmatizedText.containsKey(lemma)) {
-            lemmatizedText.put(lemma, 1);
-        } else {
-            lemmatizedText.put(lemma, lemmatizedText.get(lemma) + 1);
-        }
-        saveToDB(lemma);
-        return lemmatizedText;
-    }
-
-    private void saveToDB(String lemma) {
-        try {
-            String pathPage = new URL(urlPage).getPath();
-            lemmaIndexingService.saveLemmaToDB(lemma, urlSite, pathPage);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

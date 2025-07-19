@@ -15,16 +15,10 @@ import java.util.Optional;
 @Repository
 public interface SiteRepository extends JpaRepository<Site, Integer> {
 
-    @Query("SELECT s FROM Site s WHERE s.url = ?1")
-    Optional<Site> findSiteByUrl(String url);
-
     @Transactional
     @Modifying
     @Query("DELETE FROM Site s WHERE s.url = :url")
     void deleteSiteByUrl(String url);
-
-
-    boolean existsByUrl(String url);
 
     @Transactional
     @Modifying
@@ -35,4 +29,6 @@ public interface SiteRepository extends JpaRepository<Site, Integer> {
     @Modifying
     @Query("UPDATE Site s SET s.status = :status WHERE s.url = :url")
     void updateStatusByUrl(String url, Status status);
+
+    Optional<Site> findSiteByUrl(String url);
 }

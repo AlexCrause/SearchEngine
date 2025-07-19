@@ -89,9 +89,6 @@ public class SiteCrawler extends RecursiveTask<Set<String>> {
 
         if (isCancelled() || Thread.currentThread().isInterrupted()) return Collections.emptySet();
 
-        ForkJoinPool pool = ForkJoinTask.getPool();
-        System.out.printf("Task Count: %d\n", pool.getQueuedTaskCount());
-
         if (depth > maxDepth || !visitedUrls.add(url)) {
             return Collections.emptySet();
         }
@@ -109,14 +106,13 @@ public class SiteCrawler extends RecursiveTask<Set<String>> {
 
             siteIndexingService.updateSiteStatusTime(domainHost);
             pageIndexingService.findSiteIdAndSavePages(url, doc, domainHost, statusCode);
+
+            System.out.println("URL: " + url);
+            String siteUrl = UrlUtils.getSiteUrl(url);
+            System.out.println("Site URL: " + siteUrl);
             if (statusCode != 200) {
                 return Collections.emptySet();
             }
-            System.out.println("URL: " + url);
-
-            String siteUrl = UrlUtils.getSiteUrl(url);
-            System.out.println("Site URL: " + siteUrl);
-
             Lemmatizer lemmatizer = new Lemmatizer(siteUrl, url, lemmaIndexingService);
             String stringWithoutTags = lemmatizer.clearWebPageFromHtmlTags(doc);
             lemmatizer.lemmatize(stringWithoutTags);

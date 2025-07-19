@@ -9,7 +9,6 @@ import searchengine.services.indexing.lemma_indexing.Lemmatizer;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.Map;
 
 public class IndexingPage {
@@ -35,13 +34,12 @@ public class IndexingPage {
                     lemmaIndexingService);
             String stringRes = lemmatizer.clearWebPageFromHtmlTags(document);
             System.out.println(stringRes);
-            HashMap<String, Integer> lemmatized = lemmatizer.lemmatize(stringRes);
+            Map<String, Integer> lemmatized = lemmatizer.lemmatize(stringRes);
             for (Map.Entry<String, Integer> stringIntegerEntry : lemmatized.entrySet()) {
                 String word = stringIntegerEntry.getKey();
                 Integer count = stringIntegerEntry.getValue();
                 System.out.println("word: " + word + " count: " + count);
             }
-
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
         }
