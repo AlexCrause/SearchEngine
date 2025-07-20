@@ -5,49 +5,43 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.model.Site;
 import searchengine.model.Status;
-import searchengine.repositories.IndexRepository;
-import searchengine.repositories.LemmaRepository;
-import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
 import searchengine.services.indexing.UrlUtils;
 
 import java.net.MalformedURLException;
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class SiteIndexingService {
 
     private final SiteRepository siteRepository;
-    private final PageRepository pageRepository;
-    private final LemmaRepository lemmaRepository;
-    private final IndexRepository indexRepository;
 
     @Transactional
-    void writeToDb(String startUrl, String name) throws MalformedURLException {
-        String normalizedWithWWW = UrlUtils.normalizeUrlWithWWW(startUrl); //    с www и / в конце
-        removeSiteData(normalizedWithWWW);
+    void writeToDb(String normalizedUrl, String name) {
+        removeSiteData(normalizedUrl);
 
         Site site = new Site();
         site.setName(name);
-        site.setUrl(normalizedWithWWW);
+        site.setUrl(normalizedUrl);
         site.setStatus(Status.INDEXING);
         site.setStatusTime(new Date());
         siteRepository.save(site);
     }
 
     @Transactional
-    private void removeSiteData(String normalizedWithWWW) {
-        indexRepository.deleteAll();
-        pageRepository.deletePagesBySiteUrl(normalizedWithWWW);
-        lemmaRepository.deleteAll();
-        siteRepository.deleteSiteByUrl(normalizedWithWWW);
+    private void removeSiteData(String normalizedUrl) {
+        Optional<Site> siteOptional = siteRepository.findSiteByUrl(normalizedUrl);
+        if (siteOptional.isPresent()) {
+            Site site = siteOptional.get();
+            siteRepository.delete(site);
+        }
     }
 
     @Transactional
-    void updateSiteStatusTime(String domain) throws MalformedURLException {
-        String urlWithWWW = UrlUtils.normalizeUrlWithWWW(domain);
-        siteRepository.updateStatusTimeByUrl(urlWithWWW);
+    void updateSiteStatusTime(String siteUrl) throws MalformedURLException {
+        siteRepository.updateStatusTimeByUrl(siteUrl);
     }
 
     @Transactional

@@ -17,11 +17,6 @@ public interface SiteRepository extends JpaRepository<Site, Integer> {
 
     @Transactional
     @Modifying
-    @Query("DELETE FROM Site s WHERE s.url = :url")
-    void deleteSiteByUrl(String url);
-
-    @Transactional
-    @Modifying
     @Query("UPDATE Site s SET s.statusTime = CURRENT_TIMESTAMP WHERE s.url = :url")
     void updateStatusTimeByUrl(@Param("url") String url);
 
@@ -30,5 +25,6 @@ public interface SiteRepository extends JpaRepository<Site, Integer> {
     @Query("UPDATE Site s SET s.status = :status WHERE s.url = :url")
     void updateStatusByUrl(String url, Status status);
 
+    @Query("SELECT s FROM Site s WHERE s.url = :url")
     Optional<Site> findSiteByUrl(String url);
 }

@@ -42,11 +42,10 @@ public class LemmaIndexingService {
                                 Map<String, Integer> lemmas) throws MalformedURLException {
         long startTime = System.currentTimeMillis();
         try {
-
-            String normalizedUrl = UrlUtils.normalizeUrl(urlSite);
-            String urlWithWWW = UrlUtils.normalizeUrlWithWWW(normalizedUrl);
+            String urlWithWWW = UrlUtils.normalizeUrlWithWWW(urlSite);
+            System.out.println("urlSite = " + urlWithWWW);
             Site site = siteRepository.findSiteByUrl(urlWithWWW)
-                    .orElseThrow(() -> new IllegalArgumentException("Site not found: " + normalizedUrl));
+                    .orElseThrow(() -> new IllegalArgumentException("Site not found: " + urlWithWWW));
 
             Page page = pageRepository.findPageByPathAndSiteId(pathPage, site)
                     .orElseThrow(() -> new IllegalArgumentException("Page not found: " + pathPage));
@@ -59,49 +58,43 @@ public class LemmaIndexingService {
                         siteId -> loadLemmasForSite(site)
                 );
 
-                List<Lemma> newLemmas = new ArrayList<>();
-                //List<Lemma> updatedLemmas = new ArrayList<>();
-                List<Index> newIndices = new ArrayList<>();
+                List<Lemma> lemmasToSave = new ArrayList<>();
+                List<Index> indicesToSave = new ArrayList<>();
 
 
+                // Этап 1: Подготовка лемм к сохранению
                 for (Map.Entry<String, Integer> entry : lemmas.entrySet()) {
                     String lemmaText = entry.getKey();
                     Lemma lemma = siteLemmas.get(lemmaText);
 
                     if (lemma == null) {
-                        lemma = createNewLemma(lemmaText, site);
+                        lemma = new Lemma();
+                        lemma.setLemma(lemmaText);
+                        lemma.setFrequency(1);
+                        lemma.setSiteId(site);
                         siteLemmas.put(lemmaText, lemma);
-                        newLemmas.add(lemma);
+                        lemmasToSave.add(lemma);
+                    } else {
+                        lemma.setFrequency(lemma.getFrequency() + 1);
+                        lemmasToSave.add(lemma);
                     }
                 }
-
-                saveInBatches(newLemmas, lemmaRepository::saveAll, 100);
-
-
-                for (Lemma lemma : newLemmas) {
-                    if (lemma.getId() == null) {
-                        log.error("ОШИБКА: Лемма '{}' не получила ID после сохранения!", lemma.getLemma());
-                    }
-                }
-
+                saveInBatches(lemmasToSave, lemmaRepository::saveAll, 100);
 
                 for (Map.Entry<String, Integer> entry : lemmas.entrySet()) {
                     String lemmaText = entry.getKey();
                     float rank = entry.getValue();
+
                     Lemma lemma = siteLemmas.get(lemmaText);
 
-                    if (lemma.getId() == null) {
-                        lemma = lemmaRepository.findLemmaByLemmaAndSiteId(lemmaText, site)
-                                .orElseThrow(() -> new IllegalStateException("Лемма не найдена после сохранения"));
-                        siteLemmas.put(lemmaText, lemma); // Обновляем кэш
-                    }
-
-                    Index index = createIndex(page, lemma, rank);
-                    newIndices.add(index);
+                    Index index = new Index();
+                    index.setPageId(page);
+                    index.setLemmaId(lemma);
+                    index.setRank(rank);
+                    indicesToSave.add(index);
                 }
 
-
-                saveInBatches(newIndices, indexRepository::saveAll, 100);
+                saveInBatches(indicesToSave, indexRepository::saveAll, 100);
 
                 //updateSiteStatusTime(site);
             }
@@ -123,22 +116,6 @@ public class LemmaIndexingService {
                 ));
     }
 
-    private Lemma createNewLemma(String lemmaText, Site site) {
-        Lemma lemma = new Lemma();
-        lemma.setLemma(lemmaText);
-        lemma.setFrequency(1);
-        lemma.setSiteId(site);
-        return lemma;
-    }
-
-    private Index createIndex(Page page, Lemma lemma, float rank) {
-        Index index = new Index();
-        index.setPageId(page);
-        index.setLemmaId(lemma);
-        index.setRank(rank);
-        return index;
-    }
-
     private <T> void saveInBatches(List<T> entities, Consumer<List<T>> saver, int batchSize) {
         if (entities.isEmpty()) return;
 
@@ -157,20 +134,4 @@ public class LemmaIndexingService {
 //            log.error("Error updating site status time: {}", e.getMessage(), e);
 //        }
 //    }
-
-
-    private void updateLemmaFrequency(Lemma lemma,
-                                      Page page) {
-        Optional<Index> indexOpt = indexRepository.findIndexByLemmaIdAndPageId(
-                lemma, page);
-        Optional<Integer> countConnections = indexRepository.findCountConnectionsLemmaIdWithPagesId(lemma);
-        if (countConnections.isEmpty()) return;
-        if (indexOpt.isPresent()) {
-            if (indexOpt.get().getRank() == 1 && countConnections.get() > 1) {
-                lemma.setFrequency(lemma.getFrequency() + 1);
-                lemmaRepository.save(lemma);
-            }
-        }
-    }
-
 }

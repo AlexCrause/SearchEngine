@@ -8,8 +8,8 @@ public class UrlUtils {
 
 
     public static String normalizeUrlWithWWW(String url) throws MalformedURLException {
-        if (!url.startsWith("http://") && !url.startsWith("https://")) {
-            url = "https://" + url;
+        if (url.startsWith("http://")) {
+            url = url.replace("http://", "https://");
         }
         URL u = new URL(url);
         String host = u.getHost();

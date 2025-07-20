@@ -12,9 +12,6 @@ import java.util.Optional;
 @Repository
 public interface LemmaRepository extends JpaRepository<Lemma, Integer> {
 
-    @Query("SELECT l FROM Lemma l WHERE l.lemma = :lemmaWord AND l.siteId = :id")
-    Optional<Lemma> findLemmaByLemmaAndSiteId(String lemmaWord, Site id);
-
     @Query("SELECT COUNT(l) FROM Lemma l WHERE l.siteId = :siteId")
     Optional<Integer> countLemmasBySite(Site siteId);
 

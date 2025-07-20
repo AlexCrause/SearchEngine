@@ -61,14 +61,14 @@ public class SiteCrawler extends RecursiveTask<Set<String>> {
         int maxDepth = 1;
         ForkJoinTask<Set<String>> task = null;
         try {
-            String normalizedStartUrl = UrlUtils.normalizeUrl(startUrl); //    со / на конце
-            String baseHost = UrlUtils.getDomainHost(normalizedStartUrl); //без www.
+            String urlWithWWW = UrlUtils.normalizeUrlWithWWW(startUrl);
+            String baseHost = UrlUtils.getDomainHost(urlWithWWW); //без www.
 
-            siteIndexingService.writeToDb(normalizedStartUrl, name);
+            siteIndexingService.writeToDb(urlWithWWW, name);
 
             Set<String> visitedUrls = ConcurrentHashMap.newKeySet();
 
-            task = fjpool.submit(new SiteCrawler(normalizedStartUrl, name, baseHost,
+            task = fjpool.submit(new SiteCrawler(urlWithWWW, name, baseHost,
                     0, maxDepth, visitedUrls,
                     pageIndexingService, siteIndexingService, lemmaIndexingService));
             tasksMap.put(baseHost, task);
@@ -104,15 +104,14 @@ public class SiteCrawler extends RecursiveTask<Set<String>> {
             Document doc = response.parse();
             Elements links = doc.select("a[href]");
 
-            siteIndexingService.updateSiteStatusTime(domainHost);
-            pageIndexingService.findSiteIdAndSavePages(url, doc, domainHost, statusCode);
-
-            System.out.println("URL: " + url);
             String siteUrl = UrlUtils.getSiteUrl(url);
-            System.out.println("Site URL: " + siteUrl);
+            siteIndexingService.updateSiteStatusTime(siteUrl);
+            pageIndexingService.findSiteIdAndSavePages(url, doc, statusCode);
+
             if (statusCode != 200) {
                 return Collections.emptySet();
             }
+
             Lemmatizer lemmatizer = new Lemmatizer(siteUrl, url, lemmaIndexingService);
             String stringWithoutTags = lemmatizer.clearWebPageFromHtmlTags(doc);
             lemmatizer.lemmatize(stringWithoutTags);
@@ -125,7 +124,8 @@ public class SiteCrawler extends RecursiveTask<Set<String>> {
             return Collections.emptySet();
         } catch (IOException e) {
             if (Thread.currentThread().isInterrupted()) return Collections.emptySet();
-            System.err.println("Ошибка при загрузке: " + url + " | " + e.getMessage());
+            //System.err.println("Ошибка при загрузке: " + url + " | " + e.getMessage());
+            e.printStackTrace();
         }
         System.out.println("Всего URL после обхода: " + visitedUrls.size());
         return visitedUrls;

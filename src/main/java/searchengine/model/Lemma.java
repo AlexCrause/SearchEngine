@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -30,7 +31,22 @@ public class Lemma {
     @Column(name = "frequency", nullable = false)
     private Integer frequency;
 
-    @OneToMany(mappedBy = "lemmaId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "lemmaId", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Index> indexes;
+
+
+    public Lemma() {
+        this.indexes = new ArrayList<>();
+    }
+
+    public void addIndex(Index index) {
+        indexes.add(index);
+        index.setLemmaId(this);
+    }
+
+    public void removeIndex(Index index) {
+        indexes.remove(index);
+        index.setLemmaId(null);
+    }
 }

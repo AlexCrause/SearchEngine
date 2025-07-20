@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -35,11 +36,11 @@ public class Site {
     @Column(name = "name", columnDefinition = "VARCHAR(255)", nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "siteId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "siteId", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private List<Page> pages;
+    private List<Page> pages = new ArrayList<>();
 
-    @OneToMany(mappedBy = "siteId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "siteId", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private List<Lemma> lemmas;
+    private List<Lemma> lemmas = new ArrayList<>();
 }

@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.model.Page;
 import searchengine.model.Site;
-import searchengine.repositories.IndexRepository;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
 import searchengine.services.indexing.UrlUtils;
@@ -26,11 +25,13 @@ public class PageIndexingService {
     @Transactional
     public void findSiteIdAndSavePages(String url,
                                        Document doc,
-                                       String domain,
                                        int statusCode) {
         try {
-            String siteUrlWithWWW = UrlUtils.normalizeUrlWithWWW(domain);
-            Optional<Site> siteOpt = siteRepository.findSiteByUrl(siteUrlWithWWW);
+            System.out.println("Сохранение страницы: " + url);
+            String siteUrlWithWWW = UrlUtils.normalizeUrlWithWWW(url);
+            System.out.println("siteUrlWithWWW: " + siteUrlWithWWW);
+            String siteUrl = UrlUtils.getSiteUrl(siteUrlWithWWW);
+            Optional<Site> siteOpt = siteRepository.findSiteByUrl(siteUrl);
             if (siteOpt.isEmpty()) return;
 
             String path = new URI(url).getPath();
