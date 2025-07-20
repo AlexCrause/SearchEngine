@@ -55,19 +55,27 @@ public class PageIndexingService {
     }
 
     @Transactional
-    public void saveHTMLPage(String url,
-                             Document doc) throws MalformedURLException, URISyntaxException {
-
-        String path = new URI(url).getPath();
-
+    public void saveHTMLPage(String siteUrl,
+                             String pageUrl,
+                             Document doc,
+                             int statusCode) throws MalformedURLException, URISyntaxException {
+        String urlWithWWW = UrlUtils.normalizeUrlWithWWW(siteUrl);
+        Optional<Site> siteByUrl = siteRepository.findSiteByUrl(urlWithWWW);
+        if (siteByUrl.isEmpty()) return;
+        String path = new URI(pageUrl).getPath();
         Optional<Page> pageOptional = pageRepository.findPageByPath(path);
+
         if (pageOptional.isEmpty()) {
-            return;
+            Page page = new Page();
+            page.setSiteId(siteByUrl.get());
+            page.setContent(doc.html());
+            page.setPath(path);
+            page.setCode(statusCode);
+            pageRepository.save(page);
+        } else {
+            Page page = pageOptional.get();
+            page.setContent(doc.html());
+            pageRepository.save(page);
         }
-
-        Page page = pageOptional.get();
-        page.setContent(doc.html());
-
-        pageRepository.save(page);
     }
 }

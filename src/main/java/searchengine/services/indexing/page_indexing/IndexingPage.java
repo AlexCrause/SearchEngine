@@ -23,8 +23,9 @@ public class IndexingPage {
                     .referrer(AppConfig.getReferrer())
                     .execute();
             Document document = response.parse();
+            int statusCode = response.statusCode();
 
-            pageIndexingService.saveHTMLPage(urlPage, document);
+            pageIndexingService.saveHTMLPage(urlSite, urlPage, document, statusCode);
 
             System.out.println("URLSite " + urlSite);
             System.out.println("URLPage " + urlPage);
