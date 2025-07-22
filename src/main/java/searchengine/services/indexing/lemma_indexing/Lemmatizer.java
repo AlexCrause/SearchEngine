@@ -5,6 +5,7 @@ import org.apache.lucene.morphology.english.EnglishLuceneMorphology;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -13,14 +14,23 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
+@Service
 public class Lemmatizer {
 
     private String urlSite;
     private String urlPage;
     private LemmaIndexingService lemmaIndexingService;
 
-    private final LuceneMorphology luceneMorph1 = new RussianLuceneMorphology();
-    private final LuceneMorphology luceneMorph2 = new EnglishLuceneMorphology();
+    private final LuceneMorphology luceneMorph1;
+    private final LuceneMorphology luceneMorph2;
+    {
+        try {
+            luceneMorph1 = new RussianLuceneMorphology();
+            luceneMorph2 = new EnglishLuceneMorphology();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private static final Pattern WORD_PATTERN = Pattern.compile("[а-яА-ЯёЁa-zA-Z`-]+");
 
@@ -31,16 +41,16 @@ public class Lemmatizer {
 
     public Lemmatizer(String urlSite,
                       String urlPage,
-                      LemmaIndexingService lemmaIndexingService) throws IOException {
+                      LemmaIndexingService lemmaIndexingService) {
         this.urlSite = urlSite;
         this.urlPage = urlPage;
         this.lemmaIndexingService = lemmaIndexingService;
     }
 
-    public Lemmatizer() throws IOException {
+    public Lemmatizer() {
     }
 
-    public Map<String, Integer> lemmatize(String text) throws IOException {
+    public Map<String, Integer> lemmatize(String text) {
         processText(text);
         saveLemmasToDB();
         return lemmatizedText;
@@ -73,9 +83,13 @@ public class Lemmatizer {
     }
 
     private boolean isAllowedPartOfSpeech(String morphInfo) {
-        return !(morphInfo.contains("|l") || morphInfo.contains("|n") ||
-                morphInfo.contains("|f") || morphInfo.contains("|e") ||
-                morphInfo.contains("|Y КР_ПРИЛ") || morphInfo.contains("|o"));
+//        return !(morphInfo.contains("|l") || morphInfo.contains("|n") ||
+//                morphInfo.contains("|f") || morphInfo.contains("|e") ||
+//                morphInfo.contains("|Y КР_ПРИЛ") || morphInfo.contains("|o"));
+        return !(morphInfo.contains("|l") ||  // Предлоги
+                morphInfo.contains("|e") ||  // Междометия
+                morphInfo.contains("|c") ||  // Союзы
+                morphInfo.contains("|r")); // Частицы
     }
 
     private String extractLemma(String morphInfo) {

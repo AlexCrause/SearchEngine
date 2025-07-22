@@ -8,6 +8,7 @@ import searchengine.model.Site;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface LemmaRepository extends JpaRepository<Lemma, Integer> {
@@ -17,4 +18,8 @@ public interface LemmaRepository extends JpaRepository<Lemma, Integer> {
 
     @Query("SELECT l FROM Lemma l WHERE l.siteId = :siteId")
     List<Lemma> findLemmaBySite(Site siteId);
+
+
+    @Query("SELECT l FROM Lemma l WHERE l.lemma IN :lemmas AND l.siteId = :siteId")
+    List<Lemma> findLemmasAtSite(List<String> lemmas, Site siteId);
 }

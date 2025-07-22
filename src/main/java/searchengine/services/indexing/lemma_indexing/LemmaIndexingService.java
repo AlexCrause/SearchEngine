@@ -31,9 +31,7 @@ public class LemmaIndexingService {
     private final PageRepository pageRepository;
     private final IndexRepository indexRepository;
 
-
     private final Map<Integer, Map<String, Lemma>> lemmaCache = new ConcurrentHashMap<>();
-
     private final Map<Integer, Object> siteLocks = new ConcurrentHashMap<>();
 
     @Transactional
@@ -61,8 +59,6 @@ public class LemmaIndexingService {
                 List<Lemma> lemmasToSave = new ArrayList<>();
                 List<Index> indicesToSave = new ArrayList<>();
 
-
-                // Этап 1: Подготовка лемм к сохранению
                 for (Map.Entry<String, Integer> entry : lemmas.entrySet()) {
                     String lemmaText = entry.getKey();
                     Lemma lemma = siteLemmas.get(lemmaText);
@@ -93,7 +89,6 @@ public class LemmaIndexingService {
                     index.setRank(rank);
                     indicesToSave.add(index);
                 }
-
                 saveInBatches(indicesToSave, indexRepository::saveAll, 100);
 
                 //updateSiteStatusTime(site);
