@@ -23,4 +23,7 @@ public interface IndexRepository extends JpaRepository<Index, Integer> {
 
     @Query("SELECT i FROM Index i WHERE i.lemmaId = ?1")
     List<Index> findIndexByLemma(Lemma lemmaId);
+
+    @Query("SELECT i FROM Index i WHERE i.pageId = ?1 AND i.lemmaId IN ?2")
+    List<Index> findListIndexesByPageAndLemmaList(Page pageId, List<Lemma> lemmas);
 }

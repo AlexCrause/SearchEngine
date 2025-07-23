@@ -3,10 +3,7 @@ package searchengine.controllers;
 import lombok.SneakyThrows;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.services.indexing.IndexingService;
 import searchengine.services.search_data.SearchService;
@@ -43,17 +40,15 @@ public class ApiController {
     }
 
     @PostMapping("/indexPage")
-    public ResponseEntity<?> indexPage(@Param("url") String url) {
+    public ResponseEntity<?> indexPage(@RequestParam("url") String url) {
         return indexingService.indexPage(url);
     }
 
-    //Сделайте первый шаг на пути к своей цели    https://skillbox.ru/
-    //Что может сделать весна   https://spring.io/
     @GetMapping("/search")
-    public ResponseEntity<?> search(@Param("query") String query,
-                                    @Param("site") String site,
-                                    @Param("offset") int offset,
-                                    @Param("limit") int limit) {
+    public ResponseEntity<?> search(@RequestParam("query") String query,
+                                    @RequestParam("site") String site,
+                                    @RequestParam(value = "offset", defaultValue = "0") int offset,
+                                    @RequestParam(value = "limit", defaultValue = "20") int limit) {
         return searchService.search(query, site, offset, limit);
     }
 }
