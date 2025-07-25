@@ -19,4 +19,7 @@ public interface PageRepository extends JpaRepository<Page, Integer> {
 
     @Query("SELECT COUNT(p) FROM Page p WHERE p.siteId = :siteId")
     Optional<Integer> countPagesBySite(Site siteId);
+
+    @Query("SELECT p FROM Page p WHERE p.id = :key")
+    Optional<Page> findPageById(Integer key);
 }

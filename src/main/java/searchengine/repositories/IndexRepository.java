@@ -26,4 +26,7 @@ public interface IndexRepository extends JpaRepository<Index, Integer> {
 
     @Query("SELECT i FROM Index i WHERE i.pageId = ?1 AND i.lemmaId IN ?2")
     List<Index> findListIndexesByPageAndLemmaList(Page pageId, List<Lemma> lemmas);
+
+    @Query("SELECT SUM(i.rank) FROM Index i WHERE i.pageId = ?1 AND i.lemmaId IN ?2")
+    float sumRankForPageAndLemmas(Page page, List<Lemma> lemmas);
 }
