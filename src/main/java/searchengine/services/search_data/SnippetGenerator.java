@@ -13,15 +13,17 @@ import java.util.stream.Collectors;
 @Component
 public class SnippetGenerator {
 
+    private static final int CONTEXT_LENGTH = 100;
+
     public String generate(String htmlContent, List<String> lemmas) {
-        // 1. Получаем текст из HTML
+        // 1. Извлекаем текст из HTML
         String text = extractTextFromHtml(htmlContent);
 
-        // 2. Получаем предложения с леммами
-        String context = getSurroundingContext(text, lemmas);
+        // 2. Получаем срез текста
+        String snippet = extractSnippet(text, lemmas, CONTEXT_LENGTH);
 
         // 3. Подсвечиваем леммы
-        return highlightLemmas(context, lemmas);
+        return highlightLemmas(snippet, lemmas);
     }
 
     private String extractTextFromHtml(String html) {
@@ -30,38 +32,55 @@ public class SnippetGenerator {
         StringBuilder sb = new StringBuilder();
         for (Element el : elements) {
             String txt = el.text();
-            if (!txt.isEmpty()) {
+            if (!txt.isEmpty() && !txt.contains("Подробнее")) {
                 sb.append(txt).append(" ");
             }
         }
         return sb.toString().trim();
     }
 
-    private String getSurroundingContext(String fullText, List<String> lemmas) {
-        String[] sentences = fullText.split("(?<=[.!?])\\s+");
-        List<String> result = new ArrayList<>();
+//    private String getSurroundingContext(String fullText, List<String> lemmas) {
+//        String[] sentences = fullText.split("(?<=[.!?])\\s+");
+//        List<String> result = new ArrayList<>();
+//
+//        for (String sentence : sentences) {
+//            for (String lemma : lemmas) {
+//                if (sentence.toLowerCase().contains(lemma.toLowerCase())) {
+//                    result.add(sentence.trim());
+//                    break;
+//                }
+//            }
+//            if (result.size() == 1) break;
+//        }
+//        return String.join(" ", result);
+//    }
 
-        for (String sentence : sentences) {
-            for (String lemma : lemmas) {
-                if (sentence.toLowerCase().contains(lemma.toLowerCase())) {
-                    result.add(sentence.trim());
-                    break;
-                }
+    public String extractSnippet(String text, List<String> lemmas, int contextLength) {
+        String lowerText = text.toLowerCase();
+
+        for (String lemma : lemmas) {
+            int index = lowerText.indexOf(lemma);
+            if (index == -1) {
+                return "";
             }
-            if (result.size() == 1) break;
+            int start = Math.max(0, index - contextLength);
+            int end = Math.min(text.length(), index + lemma.length() + contextLength);
+
+            String snippet = text.substring(start, end).trim();
+            return "..." + snippet + "...";
         }
-        return String.join(" ", result);
+        return "";
     }
 
-    private String highlightLemmas(String text, List<String> lemmas) {
-        if (text.isEmpty()) return "";
 
-        // Создаём одно регулярное выражение для всех лемм
+    private String highlightLemmas(String snippet, List<String> lemmas) {
+        if (snippet.isEmpty()) return "";
+
+        // Создаем регулярное выражение для поиска лемм
         String pattern = lemmas.stream()
                 .map(Pattern::quote)
-                //.collect(Collectors.joining("|", "(?i)\\b(", ")\\b"));
                 .collect(Collectors.joining("|", "(?i)(", ")"));
 
-        return text.replaceAll(pattern, "<b>$1</b>");
+        return snippet.replaceAll(pattern, "<b>$1</b>");
     }
 }

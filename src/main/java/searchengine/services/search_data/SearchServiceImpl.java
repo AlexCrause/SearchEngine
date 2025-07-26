@@ -49,7 +49,7 @@ public class SearchServiceImpl implements SearchService {
         if (site == null || site.isBlank()) {
             List<ResponseData> aggregatedResults = new ArrayList<>();
             for (Site s : sites.getSites()) {
-                ResponseEntity<?> response = search(query, s.getUrl(), 0, Integer.MAX_VALUE);
+                ResponseEntity<?> response = search(query, s.getUrl(), offset, limit);
                 if (response.getBody() instanceof SearchResponse searchResponse
                         && searchResponse.getResult()) {
                     aggregatedResults.addAll(searchResponse.getData());
@@ -92,6 +92,8 @@ public class SearchServiceImpl implements SearchService {
         Map<Integer, Float> relevanceMap = calculatingRelevance(pages, sortedLemmas);
         List<ResponseData> responseData = sortingAndFormingResponse(
                 relevanceMap, sortedLemmas, configuredSite);
+
+        System.out.println("Offset: " + offset + ", Limit: " + limit + ", Total: " + responseData.size());
 
         SearchResponse response = new SearchResponse();
         response.setResult(true);
