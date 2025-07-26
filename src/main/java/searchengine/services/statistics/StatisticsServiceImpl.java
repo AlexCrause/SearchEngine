@@ -66,8 +66,9 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     private Optional<searchengine.model.Site> findInfoSite(Site site) {
         String urlSite = site.getUrl();
-        String normalizeUrl = UrlUtils.normalizeUrl(urlSite);
-        return siteRepository.findSiteByUrl(normalizeUrl);
+        //String normalizeUrl = UrlUtils.normalizeUrl(urlSite);
+        String urlWithWWW = UrlUtils.normalizeUrlWithWWW(urlSite);
+        return siteRepository.findSiteByUrl(urlWithWWW);
     }
 
     private int findCountPagesSite(searchengine.model.Site site) {

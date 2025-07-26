@@ -7,11 +7,16 @@ import java.text.Normalizer;
 public class UrlUtils {
 
 
-    public static String normalizeUrlWithWWW(String url) throws MalformedURLException {
+    public static String normalizeUrlWithWWW(String url)  {
         if (url.startsWith("http://")) {
             url = url.replace("http://", "https://");
         }
-        URL u = new URL(url);
+        URL u = null;
+        try {
+            u = new URL(url);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
         String host = u.getHost();
         if (!host.startsWith("www.")) {
             host = "www." + host;

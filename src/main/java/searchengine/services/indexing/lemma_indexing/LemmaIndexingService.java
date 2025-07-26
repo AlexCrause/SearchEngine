@@ -17,6 +17,7 @@ import searchengine.services.indexing.UrlUtils;
 import java.net.MalformedURLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -32,32 +33,38 @@ public class LemmaIndexingService {
     private final IndexRepository indexRepository;
 
     private final Map<Integer, Map<String, Lemma>> lemmaCache = new ConcurrentHashMap<>();
-    private final Map<Integer, Object> siteLocks = new ConcurrentHashMap<>();
+    private final Map<String, ReentrantLock> siteLocks = new ConcurrentHashMap<>();
 
-    @Transactional
+    private static final int LEMMA_BATCH_SIZE = 150;
+    private static final int INDEX_BATCH_SIZE = 100;
+
     public void saveLemmasBatch(String urlSite,
                                 String pathPage,
                                 Map<String, Integer> lemmas) throws MalformedURLException {
         long startTime = System.currentTimeMillis();
         try {
             String urlWithWWW = UrlUtils.normalizeUrlWithWWW(urlSite);
-            System.out.println("urlSite = " + urlWithWWW);
             Site site = siteRepository.findSiteByUrl(urlWithWWW)
                     .orElseThrow(() -> new IllegalArgumentException("Site not found: " + urlWithWWW));
 
             Page page = pageRepository.findPageByPathAndSiteId(pathPage, site)
                     .orElseThrow(() -> new IllegalArgumentException("Page not found: " + pathPage));
 
+            ReentrantLock lock = siteLocks.computeIfAbsent(site.getUrl(), k -> new ReentrantLock());
 
-            Object siteLock = siteLocks.computeIfAbsent(site.getId(), k -> new Object());
-            synchronized (siteLock){
-                Map<String, Lemma> siteLemmas = lemmaCache.computeIfAbsent(
+            Map<String, Lemma> siteLemmas;
+            List<Lemma> lemmasToSave;
+            List<Index> indicesToSave;
+
+            lock.lock();
+            try {
+                siteLemmas = lemmaCache.computeIfAbsent(
                         site.getId(),
                         siteId -> loadLemmasForSite(site)
                 );
 
-                List<Lemma> lemmasToSave = new ArrayList<>();
-                List<Index> indicesToSave = new ArrayList<>();
+                lemmasToSave = new ArrayList<>();
+                indicesToSave = new ArrayList<>();
 
                 for (Map.Entry<String, Integer> entry : lemmas.entrySet()) {
                     String lemmaText = entry.getKey();
@@ -68,6 +75,7 @@ public class LemmaIndexingService {
                         lemma.setLemma(lemmaText);
                         lemma.setFrequency(1);
                         lemma.setSiteId(site);
+
                         siteLemmas.put(lemmaText, lemma);
                         lemmasToSave.add(lemma);
                     } else {
@@ -75,7 +83,7 @@ public class LemmaIndexingService {
                         lemmasToSave.add(lemma);
                     }
                 }
-                saveInBatches(lemmasToSave, lemmaRepository::saveAll, 100);
+                saveLemmaBatchTransactional(lemmasToSave);
 
                 for (Map.Entry<String, Integer> entry : lemmas.entrySet()) {
                     String lemmaText = entry.getKey();
@@ -89,9 +97,10 @@ public class LemmaIndexingService {
                     index.setRank(rank);
                     indicesToSave.add(index);
                 }
-                saveInBatches(indicesToSave, indexRepository::saveAll, 100);
+                saveIndexBatchTransactional(indicesToSave);
 
-                //updateSiteStatusTime(site);
+            } finally {
+                lock.unlock();
             }
 
             log.info("Processed {} lemmas for {} in {} ms",
@@ -121,12 +130,13 @@ public class LemmaIndexingService {
         }
     }
 
-//    private void updateSiteStatusTime(Site site) {
-//        try {
-//            site.setStatusTime(new Date());
-//            siteRepository.save(site);
-//        } catch (Exception e) {
-//            log.error("Error updating site status time: {}", e.getMessage(), e);
-//        }
-//    }
+    @Transactional
+    public void saveLemmaBatchTransactional(List<Lemma> lemmas) {
+        saveInBatches(lemmas, lemmaRepository::saveAll, LEMMA_BATCH_SIZE);
+    }
+
+    @Transactional
+    public void saveIndexBatchTransactional(List<Index> indices) {
+        saveInBatches(indices, indexRepository::saveAll, INDEX_BATCH_SIZE);
+    }
 }
