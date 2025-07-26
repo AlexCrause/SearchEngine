@@ -28,19 +28,17 @@ import java.util.stream.Collectors;
 public class SearchServiceImpl implements SearchService {
 
     private final SitesList sites;
-    private final Lemmatizer lemmatizer;
     private final LemmaRepository lemmaRepository;
     private final SiteRepository siteRepository;
     private final IndexRepository indexRepository;
     private final PageRepository pageRepository;
-    private static final double FREQUENCY = 1;
+    private static final double FREQUENCY = 0.8;
 
     @Override
     public ResponseEntity<?> search(String query,
                                     String site,
                                     int offset,
                                     int limit) {
-
         if (query == null || query.isBlank()) {
             return ResponseEntity.ok(
                     new SearchResponseError(false, "Задан пустой поисковый запрос"));
@@ -49,8 +47,25 @@ public class SearchServiceImpl implements SearchService {
         limit = (limit == 0) ? 20 : limit;
 
         if (site == null || site.isBlank()) {
-            return ResponseEntity.ok(
-                    new SearchResponseError(false, "Поиск по всем сайтам пока не реализован"));
+            List<ResponseData> aggregatedResults = new ArrayList<>();
+            for (Site s : sites.getSites()) {
+                ResponseEntity<?> response = search(query, s.getUrl(), 0, Integer.MAX_VALUE);
+                if (response.getBody() instanceof SearchResponse searchResponse
+                        && searchResponse.getResult()) {
+                    aggregatedResults.addAll(searchResponse.getData());
+                }
+            }
+            aggregatedResults.sort(Comparator.comparing(ResponseData::getRelevance).reversed());
+
+            SearchResponse mergedResponse = new SearchResponse();
+            mergedResponse.setResult(true);
+            mergedResponse.setCount(aggregatedResults.size());
+            mergedResponse.setData(aggregatedResults.stream()
+                    .skip(offset)
+                    .limit(limit)
+                    .collect(Collectors.toList()));
+
+            return ResponseEntity.ok(mergedResponse);
         }
 
         Optional<Site> optionalConfiguredSite = sites.getSites().stream()
@@ -87,21 +102,17 @@ public class SearchServiceImpl implements SearchService {
                 .collect(Collectors.toList()));
 
         return ResponseEntity.ok(response);
-
     }
 
 
     private List<String> getLemmas(String query) {
         List<String> setLemmas = new ArrayList<>();
+        Lemmatizer lemmatizer = new Lemmatizer();
         Map<String, Integer> lemmas = lemmatizer.lemmatize(query);
         for (Map.Entry<String, Integer> stringIntegerEntry : lemmas.entrySet()) {
             String lemma = stringIntegerEntry.getKey();
-            Integer count = stringIntegerEntry.getValue();
-            //System.out.println(lemma + " " + count);
             setLemmas.add(lemma);
         }
-
-
         for (String setLemma : setLemmas) {
             System.out.println("Метод getLemmas");
             System.out.println("Lemma: " + setLemma);
@@ -118,8 +129,6 @@ public class SearchServiceImpl implements SearchService {
         if (siteOpt.isPresent()) {
             lemmasAtSite = lemmaRepository.findLemmasAtSite(lemmasString, siteOpt.get());
         }
-
-
         for (Lemma lemma : lemmasAtSite) {
             System.out.println("Метод getLemmasBySite");
             System.out.println("Lemma: " + lemma.getLemma() + " | "
@@ -157,8 +166,6 @@ public class SearchServiceImpl implements SearchService {
                 }
             }
         }
-
-
         for (Lemma rareLemma : rareLemmas) {
             System.out.println("Метод excludeFrequentLemmasByPage");
             System.out.println("Lemma: " + rareLemma.getLemma() + " | "
@@ -197,7 +204,6 @@ public class SearchServiceImpl implements SearchService {
             // Оставляем только страницы, содержащие текущую лемму
             pages.removeIf(page -> !pageIds.contains(page.getId()));
         }
-
         for (Page page : pages) {
             System.out.println("Метод findPagesByLemmas");
             System.out.println("Page: " + page.getId() + " | " +

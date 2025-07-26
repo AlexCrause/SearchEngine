@@ -48,9 +48,8 @@ public class SnippetGenerator {
                     break;
                 }
             }
-            if (result.size() >= 2) break; // Ограничиваем двумя предложениями
+            if (result.size() == 1) break;
         }
-
         return String.join(" ", result);
     }
 
@@ -60,7 +59,8 @@ public class SnippetGenerator {
         // Создаём одно регулярное выражение для всех лемм
         String pattern = lemmas.stream()
                 .map(Pattern::quote)
-                .collect(Collectors.joining("|", "(?i)\\b(", ")\\b"));
+                //.collect(Collectors.joining("|", "(?i)\\b(", ")\\b"));
+                .collect(Collectors.joining("|", "(?i)(", ")"));
 
         return text.replaceAll(pattern, "<b>$1</b>");
     }

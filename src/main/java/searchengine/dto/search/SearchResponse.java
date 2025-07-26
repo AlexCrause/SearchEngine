@@ -10,4 +10,9 @@ public class SearchResponse {
     private boolean result;
     private Integer count;
     private List<ResponseData> data;
+
+    public boolean getResult() {
+        return result;
+    }
+
 }
