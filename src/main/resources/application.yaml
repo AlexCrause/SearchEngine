@@ -2,9 +2,49 @@
 
 indexing-settings:
   sites:
-    - url: https://www.lenta.ru
-      name: Лента.ру
-    - url: https://www.skillbox.ru
-      name: Skillbox
-    - url: https://www.playback.ru
-      name: PlayBack.Ru
+#    - url: https://www.lenta.ru   #индексируется без ошибок
+#      name: Лента.ру
+#    - url: https://www.skillbox.ru  #индексируется без ошибок
+#      name: Skillbox
+#    - url: http://www.playback.ru   #индексируется без ошибок
+#      name: PlayBack.Ru
+#    - url: https://volochek.life/   #индексируется без ошибок
+#      name: Volochek
+#    - url: https://radiomv.ru/   #Ошибка при загрузке: https://www.radiomv.ru/ | PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+#      name: RadioMV
+#    - url: https://ipfran.ru/  # индексируется без ошибок
+#      name: IPFRAN
+#    - url: https://dimonvideo.ru/   #Ошибка при загрузке: https://www.dimonvideo.ru/ | No subject alternative DNS name matching www.dimonvideo.ru found.
+#      name: DimonVideo
+#    - url: https://nikoartgallery.com/  #Forbidden Access denied.
+#      name: NikoArtGallery
+#    - url: https://et-cetera.ru/mobile/  # пока не индексируется
+#      name: ET-CETERA
+#    - url: https://www.lutherancathedral.ru/  #индексируется без ошибок
+#      name: Lutheran_Cathedral
+#    - url: https://dombulgakova.ru/  #индексируется без ошибок
+#      name: DomBulgakova
+#    - url: https://www.svetlovka.ru/  # индексируется без ошибок
+#      name: Svetlovka
+server:
+  port: 8080
+
+spring:
+  datasource:
+    username: root
+
+    url: jdbc:mysql://localhost:3306/search_engine?useSSL=false&requireSSL=false&allowPublicKeyRetrieval=true
+  jpa:
+    properties:
+      hibernate:
+#        globally_quoted_identifiers: true
+#        auto_quote_keyword: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+#  sql:
+#    init:
+#      mode: always
+#      schema-locations:
+#        - classpath:index_path.sql
