@@ -28,6 +28,7 @@ http://localhost:8080
 Основные API-методы:
 Метод	Путь	Действие
 POST	/api/startIndexing	Запуск индексации
+
 GET	/api/stopIndexing	Остановка индексации
 POST	/api/indexPage	Индексация отдельной страницы
 GET	/api/statistics	Получение статистики
