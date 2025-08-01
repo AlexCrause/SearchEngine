@@ -28,6 +28,27 @@
    ```sql
    CREATE DATABASE search_engine;
 
+Настройка и запуск
+Клонируйте репозиторий:
+
+bash
+git clone https://github.com/AlexCrause/SearchEngine.git
+Настройте application.yaml:
+
+yaml
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/search_engine
+    username: ваш_пользователь
+    password: ваш_пароль
+Добавьте сайты для индексации:
+
+yaml
+indexing-settings:
+  sites:
+    - url: https://example.com
+      name: Example Site
+
 🌐 Интерфейс и API
 Приложение доступно по адресу:
 http://localhost:8080
