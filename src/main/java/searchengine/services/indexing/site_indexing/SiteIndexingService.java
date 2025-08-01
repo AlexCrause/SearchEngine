@@ -59,4 +59,13 @@ public class SiteIndexingService {
             siteRepository.save(site);
         }
     }
+
+    public void writeMistakeToDb(String url, String message) {
+        Optional<Site> siteByUrl = siteRepository.findSiteByUrl(url);
+        if (siteByUrl.isPresent()) {
+            Site site = siteByUrl.get();
+            site.setLastError(message);
+            siteRepository.save(site);
+        }
+    }
 }

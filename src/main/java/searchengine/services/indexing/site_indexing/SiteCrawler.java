@@ -124,8 +124,9 @@ public class SiteCrawler extends RecursiveTask<Set<String>> {
             return Collections.emptySet();
         } catch (IOException e) {
             if (Thread.currentThread().isInterrupted()) return Collections.emptySet();
-            //System.err.println("Ошибка при загрузке: " + url + " | " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Ошибка при загрузке: " + url + " | " + e.getMessage());
+            siteIndexingService.writeMistakeToDb(url, e.getMessage());
+            //e.printStackTrace();
         }
         System.out.println("Всего URL после обхода: " + visitedUrls.size());
         return visitedUrls;
