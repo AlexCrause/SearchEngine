@@ -1,6 +1,5 @@
 package searchengine.services.indexing;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import searchengine.config.Site;
 import searchengine.config.SitesList;
@@ -14,6 +13,7 @@ import searchengine.services.indexing.site_indexing.SiteIndexingService;
 
 import java.net.MalformedURLException;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.*;
 
 
@@ -24,7 +24,7 @@ public class IndexingServiceImpl implements IndexingService {
     private final SiteIndexingService siteIndexingService;
     private final PageIndexingService pageIndexingService;
     private final LemmaIndexingService lemmaIndexingService;
-    private volatile boolean isIndexing = false;
+    private boolean isIndexing = false;
     private final ExecutorService executor;
     private final Map<String, ForkJoinTask<?>> crawlingTasks = new ConcurrentHashMap<>();
     private ForkJoinPool forkJoinPool;
@@ -42,14 +42,13 @@ public class IndexingServiceImpl implements IndexingService {
         forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
     }
 
-    @Override
-    public synchronized ResponseEntity<?> startIndexing() {
+    public Optional<?> startIndexing() {
 
         if (isIndexing) {
             IndexingResponseError error = new IndexingResponseError();
             error.setResult(false);
             error.setError("Индексация уже запущена");
-            return ResponseEntity.ok(error);
+            return Optional.of(error);
         }
 
         isIndexing = true;
@@ -79,17 +78,17 @@ public class IndexingServiceImpl implements IndexingService {
         }
         IndexingResponse response = new IndexingResponse();
         response.setResult(true);
-        return ResponseEntity.ok(response);
+        return Optional.of(response);
     }
 
     @Override
-    public synchronized ResponseEntity<?> stopIndexing() {
+    public Optional<?> stopIndexing() {
 
         if (!isIndexing) {
             IndexingResponseError error = new IndexingResponseError();
             error.setResult(false);
             error.setError("Индексация не запущена");
-            return ResponseEntity.ok(error);
+            return Optional.of(error);
         }
 
         isIndexing = false;
@@ -109,11 +108,11 @@ public class IndexingServiceImpl implements IndexingService {
 
         IndexingResponse response = new IndexingResponse();
         response.setResult(true);
-        return ResponseEntity.ok(response);
+        return Optional.of(response);
     }
 
     @Override
-    public synchronized ResponseEntity<?> indexPage(String urlPage) {
+    public Optional<?> indexPage(String urlPage) {
 
         for (Site site : sites.getSites()) {
             String urlSite = site.getUrl();
@@ -128,18 +127,18 @@ public class IndexingServiceImpl implements IndexingService {
                             lemmaIndexingService);
                     IndexingResponse response = new IndexingResponse();
                     response.setResult(true);
-                    return ResponseEntity.ok(response);
+                    return Optional.of(response);
                 }
                 IndexingResponseError error = new IndexingResponseError();
                 error.setResult(false);
                 error.setError("Данная страница находится за пределами сайтов, " +
                         "указанных в конфигурационном файле");
-                return ResponseEntity.ok(error);
+                return Optional.of(error);
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     private void stopForkJoinPool() {

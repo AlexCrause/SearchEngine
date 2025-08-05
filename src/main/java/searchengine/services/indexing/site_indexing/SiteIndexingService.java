@@ -45,7 +45,7 @@ public class SiteIndexingService {
     }
 
     @Transactional
-    public void updateSiteStatus(String baseHost) throws MalformedURLException {
+    public void updateSiteStatus(String baseHost) {
         String urlWithWWW = UrlUtils.normalizeUrlWithWWW(baseHost);
         siteRepository.updateStatusByUrl(urlWithWWW, Status.INDEXED);
     }

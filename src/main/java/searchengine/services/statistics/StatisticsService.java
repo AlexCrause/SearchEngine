@@ -1,7 +1,7 @@
 package searchengine.services.statistics;
 
-import searchengine.dto.statistics.StatisticsResponse;
+import java.util.Optional;
 
 public interface StatisticsService {
-    StatisticsResponse getStatistics();
+    Optional<?> getStatistics();
 }

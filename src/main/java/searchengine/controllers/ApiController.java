@@ -1,15 +1,15 @@
 package searchengine.controllers;
 
-import lombok.SneakyThrows;
-import org.springframework.data.repository.query.Param;
-import org.springframework.http.ResponseEntity;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.services.indexing.IndexingService;
 import searchengine.services.search_data.SearchService;
 import searchengine.services.statistics.StatisticsService;
 
+import java.util.Optional;
+
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api")
 public class ApiController {
 
@@ -17,35 +17,28 @@ public class ApiController {
     private final IndexingService indexingService;
     private final SearchService searchService;
 
-    public ApiController(StatisticsService statisticsService,
-                         IndexingService indexingService, SearchService searchService) {
-        this.statisticsService = statisticsService;
-        this.indexingService = indexingService;
-        this.searchService = searchService;
-    }
-
     @GetMapping("/statistics")
-    public ResponseEntity<StatisticsResponse> statistics() {
-        return ResponseEntity.ok(statisticsService.getStatistics());
+    public Optional<?> statistics() {
+        return statisticsService.getStatistics();
     }
 
     @GetMapping("/startIndexing")
-    public ResponseEntity<?> startIndexing() {
+    public Optional<?> startIndexing() {
         return indexingService.startIndexing();
     }
 
     @GetMapping("/stopIndexing")
-    public ResponseEntity<?> stopIndexing() {
+    public Optional<?> stopIndexing() {
         return indexingService.stopIndexing();
     }
 
     @PostMapping("/indexPage")
-    public ResponseEntity<?> indexPage(@RequestParam("url") String url) {
+    public Optional<?> indexPage(@RequestParam("url") String url) {
         return indexingService.indexPage(url);
     }
 
     @GetMapping("/search")
-    public ResponseEntity<?> search(@RequestParam("query") String query,
+    public Optional<?> search(@RequestParam("query") String query,
                                     @RequestParam(value = "site", required = false) String site,
                                     @RequestParam(value = "offset", defaultValue = "0") int offset,
                                     @RequestParam(value = "limit", defaultValue = "10") int limit) {

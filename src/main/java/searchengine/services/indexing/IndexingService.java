@@ -1,12 +1,12 @@
 package searchengine.services.indexing;
 
-import org.springframework.http.ResponseEntity;
+import java.util.Optional;
 
 public interface IndexingService {
 
-    ResponseEntity<?> startIndexing();
+    Optional<?> startIndexing();
 
-    ResponseEntity<?> stopIndexing();
+    Optional<?> stopIndexing();
 
-    ResponseEntity<?> indexPage(String url);
+    Optional<?> indexPage(String url);
 }

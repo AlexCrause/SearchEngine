@@ -24,7 +24,7 @@ public class StatisticsServiceImpl implements StatisticsService {
     private final LemmaRepository lemmaRepository;
 
     @Override
-    public StatisticsResponse getStatistics() {
+    public Optional<?> getStatistics() {
 
         TotalStatistics total = new TotalStatistics();
         total.setSites(sites.getSites().size());
@@ -61,7 +61,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         data.setDetailed(detailed);
         response.setStatistics(data);
         response.setResult(true);
-        return response;
+        return Optional.of(response);
     }
 
     private Optional<searchengine.model.Site> findInfoSite(Site site) {

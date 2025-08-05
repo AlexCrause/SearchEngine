@@ -1,9 +1,7 @@
 package searchengine.services.search_data;
 
-import org.springframework.http.ResponseEntity;
-
-import java.io.IOException;
+import java.util.Optional;
 
 public interface SearchService {
-    ResponseEntity<?> search(String query, String site, int offset, int limit);
+    Optional<?> search(String query, String site, int offset, int limit);
 }

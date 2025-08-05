@@ -3,7 +3,6 @@ package searchengine.services.search_data;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import searchengine.config.Site;
 import searchengine.config.SitesList;
@@ -35,12 +34,12 @@ public class SearchServiceImpl implements SearchService {
     private static final double FREQUENCY = 0.8;
 
     @Override
-    public ResponseEntity<?> search(String query,
+    public Optional<?> search(String query,
                                     String site,
                                     int offset,
                                     int limit) {
         if (query == null || query.isBlank()) {
-            return ResponseEntity.ok(
+            return Optional.of(
                     new SearchResponseError(false, "Задан пустой поисковый запрос"));
         }
 
@@ -49,8 +48,8 @@ public class SearchServiceImpl implements SearchService {
         if (site == null || site.isBlank()) {
             List<ResponseData> aggregatedResults = new ArrayList<>();
             for (Site s : sites.getSites()) {
-                ResponseEntity<?> response = search(query, s.getUrl(), offset, limit);
-                if (response.getBody() instanceof SearchResponse searchResponse
+                Optional<?> response = search(query, s.getUrl(), offset, limit);
+                if (response.get() instanceof SearchResponse searchResponse
                         && searchResponse.getResult()) {
                     aggregatedResults.addAll(searchResponse.getData());
                 }
@@ -65,7 +64,7 @@ public class SearchServiceImpl implements SearchService {
                     .limit(limit)
                     .collect(Collectors.toList()));
 
-            return ResponseEntity.ok(mergedResponse);
+            return Optional.of(mergedResponse);
         }
 
         Optional<Site> optionalConfiguredSite = sites.getSites().stream()
@@ -73,7 +72,7 @@ public class SearchServiceImpl implements SearchService {
                 .findFirst();
 
         if (optionalConfiguredSite.isEmpty()) {
-            return ResponseEntity.ok(
+            return Optional.of(
                     new SearchResponseError(false, "Сайт не найден в конфигурации"));
         }
 
@@ -84,7 +83,7 @@ public class SearchServiceImpl implements SearchService {
         List<Lemma> sortedLemmas = sortLemmasByFrequency(filteredLemmas);
 
         if (sortedLemmas.isEmpty()) {
-            return ResponseEntity.ok(
+            return Optional.of(
                     new SearchResponseError(false, "Нет подходящих лемм для поиска"));
         }
 
@@ -103,7 +102,7 @@ public class SearchServiceImpl implements SearchService {
                 .limit(limit)
                 .collect(Collectors.toList()));
 
-        return ResponseEntity.ok(response);
+        return Optional.of(response);
     }
 
 
