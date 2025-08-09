@@ -35,7 +35,7 @@ public class PageIndexingService {
             if (siteOpt.isEmpty()) return;
 
             String path = new URI(url).getPath();
-            Optional<Page> pageOpt = pageRepository.findPageByPathAndSiteId(path, siteOpt.get());
+            Optional<Page> pageOpt = pageRepository.findBySiteAndPath(siteOpt.get(), path);
             if (pageOpt.isPresent()) {
                 return;
             }

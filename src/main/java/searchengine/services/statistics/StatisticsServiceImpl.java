@@ -72,12 +72,10 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
     private int findCountPagesSite(searchengine.model.Site site) {
-        Optional<Integer> countPagesBySite = pageRepository.countPagesBySite(site);
-        return countPagesBySite.orElse(0);
+        return pageRepository.countPagesBySite(site);
     }
 
     private int findCountLemmasSite(searchengine.model.Site site) {
-        Optional<Integer> countLemmasBySite = lemmaRepository.countLemmasBySite(site);
-        return countLemmasBySite.orElse(0);
+        return lemmaRepository.countBySite(site);
     }
 }

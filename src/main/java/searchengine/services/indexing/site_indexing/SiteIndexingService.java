@@ -18,7 +18,6 @@ public class SiteIndexingService {
 
     private final SiteRepository siteRepository;
 
-    @Transactional
     void writeToDb(String normalizedUrl, String name) {
         removeSiteData(normalizedUrl);
 
@@ -30,7 +29,6 @@ public class SiteIndexingService {
         siteRepository.save(site);
     }
 
-    @Transactional
     private void removeSiteData(String normalizedUrl) {
         Optional<Site> siteOptional = siteRepository.findSiteByUrl(normalizedUrl);
         if (siteOptional.isPresent()) {
@@ -39,15 +37,13 @@ public class SiteIndexingService {
         }
     }
 
-    @Transactional
     void updateSiteStatusTime(String siteUrl) throws MalformedURLException {
-        siteRepository.updateStatusTimeByUrl(siteUrl);
+        siteRepository.updateStatusTime(siteUrl);
     }
 
-    @Transactional
     public void updateSiteStatus(String baseHost) {
         String urlWithWWW = UrlUtils.normalizeUrlWithWWW(baseHost);
-        siteRepository.updateStatusByUrl(urlWithWWW, Status.INDEXED);
+        siteRepository.updateStatus(urlWithWWW, Status.INDEXED);
     }
 
     @Transactional

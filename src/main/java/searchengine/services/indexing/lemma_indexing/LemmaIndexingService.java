@@ -47,7 +47,7 @@ public class LemmaIndexingService {
             Site site = siteRepository.findSiteByUrl(urlWithWWW)
                     .orElseThrow(() -> new IllegalArgumentException("Site not found: " + urlWithWWW));
 
-            Page page = pageRepository.findPageByPathAndSiteId(pathPage, site)
+            Page page = pageRepository.findBySiteAndPath(site, pathPage)
                     .orElseThrow(() -> new IllegalArgumentException("Page not found: " + pathPage));
 
             ReentrantLock lock = siteLocks.computeIfAbsent(site.getUrl(), k -> new ReentrantLock());
@@ -112,7 +112,7 @@ public class LemmaIndexingService {
     }
 
     private Map<String, Lemma> loadLemmasForSite(Site site) {
-        return lemmaRepository.findLemmaBySite(site).stream()
+        return lemmaRepository.findAllLemmaBySite(site).stream()
                 .collect(Collectors.toConcurrentMap(
                         Lemma::getLemma,
                         Function.identity(),

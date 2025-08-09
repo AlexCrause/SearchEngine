@@ -18,13 +18,12 @@ public interface SiteRepository extends JpaRepository<Site, Integer> {
     @Transactional
     @Modifying
     @Query("UPDATE Site s SET s.statusTime = CURRENT_TIMESTAMP WHERE s.url = :url")
-    void updateStatusTimeByUrl(@Param("url") String url);
+    void updateStatusTime(@Param("url") String url);
 
     @Transactional
     @Modifying
     @Query("UPDATE Site s SET s.status = :status WHERE s.url = :url")
-    void updateStatusByUrl(String url, Status status);
+    void updateStatus(@Param("url") String url, @Param("status") Status status);
 
-    @Query("SELECT s FROM Site s WHERE s.url = :url")
     Optional<Site> findSiteByUrl(String url);
 }

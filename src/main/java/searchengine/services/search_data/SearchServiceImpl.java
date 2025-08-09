@@ -35,9 +35,9 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public Optional<?> search(String query,
-                                    String site,
-                                    int offset,
-                                    int limit) {
+                              String site,
+                              int offset,
+                              int limit) {
         if (query == null || query.isBlank()) {
             return Optional.of(
                     new SearchResponseError(false, "Задан пустой поисковый запрос"));
@@ -128,7 +128,7 @@ public class SearchServiceImpl implements SearchService {
         String normalizeUrl = UrlUtils.normalizeUrl(site.getUrl());
         Optional<searchengine.model.Site> siteOpt = siteRepository.findSiteByUrl(normalizeUrl);
         if (siteOpt.isPresent()) {
-            lemmasAtSite = lemmaRepository.findLemmasAtSite(lemmasString, siteOpt.get());
+            lemmasAtSite = lemmaRepository.findBySiteAndLemmaIn(siteOpt.get(), lemmasString);
         }
         for (Lemma lemma : lemmasAtSite) {
             System.out.println("Метод getLemmasBySite");
@@ -147,8 +147,8 @@ public class SearchServiceImpl implements SearchService {
         List<Lemma> rareLemmas = new ArrayList<>();
 
         for (Lemma lemma : lemmaObjects) {
-            Optional<Integer> countPages = indexRepository.foundCountPagesByLemmaId(lemma);
-            countPages.ifPresent(integer -> mapLemmas.put(lemma, integer));
+            int countPages = indexRepository.countByLemma(lemma);
+            mapLemmas.put(lemma, countPages);
         }
 
         for (Map.Entry<Lemma, Integer> lemmaIntegerEntry : mapLemmas.entrySet()) {
@@ -158,13 +158,13 @@ public class SearchServiceImpl implements SearchService {
                     UrlUtils.normalizeUrl(site.getUrl()));
             System.out.println("siteByUrl: " + siteByUrl);
             if (siteByUrl.isPresent()) {
-                Optional<Integer> totalPages = pageRepository.countPagesBySite(siteByUrl.get());
-                if (totalPages.isPresent()) {
-                    int threshold = (int) (totalPages.get() * FREQUENCY);
-                    if (countPages < threshold) {
-                        rareLemmas.add(lemmaIntegerEntry.getKey());
-                    }
+                int totalPages = pageRepository.countPagesBySite(siteByUrl.get());
+
+                int threshold = (int) (totalPages * FREQUENCY);
+                if (countPages < threshold) {
+                    rareLemmas.add(lemmaIntegerEntry.getKey());
                 }
+
             }
         }
         for (Lemma rareLemma : rareLemmas) {
@@ -190,12 +190,12 @@ public class SearchServiceImpl implements SearchService {
         if (lemmas.isEmpty()) return Collections.emptyList();
 
         // Получаем страницы для первой леммы
-        List<Page> pages = indexRepository.findPagesByLemma(lemmas.get(0));
+        List<Page> pages = pageRepository.findPagesByLemma(lemmas.get(0));
 
         // Фильтруем страницы по остальным леммам
         for (int i = 1; i < lemmas.size(); i++) {
             Lemma lemma = lemmas.get(i);
-            List<Page> pagesForLemma = indexRepository.findPagesByLemma(lemma);
+            List<Page> pagesForLemma = pageRepository.findPagesByLemma(lemma);
 
             // Используем временный set для быстрого поиска
             Set<Integer> pageIds = pagesForLemma.stream()
