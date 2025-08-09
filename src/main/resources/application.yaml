@@ -4,8 +4,8 @@ indexing-settings:
   sites:
 #    - url: https://www.lenta.ru   #индексируется без ошибок
 #      name: Лента.ру
-#    - url: https://www.skillbox.ru  #индексируется без ошибок
-#      name: Skillbox
+    - url: https://www.skillbox.ru  #индексируется без ошибок
+      name: Skillbox
 #    - url: http://www.playback.ru   #индексируется без ошибок
 #      name: PlayBack.Ru
 #    - url: https://volochek.life/   #индексируется без ошибок
@@ -31,20 +31,17 @@ server:
 
 spring:
   datasource:
-    username: root
+    username: postgres
+    password:
+    url: jdbc:postgresql://localhost:5432/search_engine
+    driver-class-name: org.postgresql.Driver
 
-    url: jdbc:mysql://localhost:3306/search_engine?useSSL=false&requireSSL=false&allowPublicKeyRetrieval=true
   jpa:
-    properties:
-      hibernate:
-#        globally_quoted_identifiers: true
-#        auto_quote_keyword: true
-        dialect: org.hibernate.dialect.MySQL8Dialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
-#  sql:
-#    init:
-#      mode: always
-#      schema-locations:
-#        - classpath:index_path.sql
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.xml

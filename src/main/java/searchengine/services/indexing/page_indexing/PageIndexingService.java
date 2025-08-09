@@ -41,7 +41,7 @@ public class PageIndexingService {
             }
 
             Page page = new Page();
-            page.setSiteId(siteOpt.get());
+            page.setSite(siteOpt.get());
             page.setPath(path);
             page.setCode(statusCode);
             page.setContent(UrlUtils.cleanContent(doc.html()));
@@ -67,7 +67,7 @@ public class PageIndexingService {
 
         if (pageOptional.isEmpty()) {
             Page page = new Page();
-            page.setSiteId(siteByUrl.get());
+            page.setSite(siteByUrl.get());
             page.setContent(doc.html());
             page.setPath(path);
             page.setCode(statusCode);

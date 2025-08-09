@@ -22,7 +22,7 @@ public class Page {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "site_id", nullable = false)
     @JsonBackReference
-    private Site siteId;
+    private Site site;
 
     @Column(name = "path", columnDefinition = "TEXT", nullable = false)
     private String path;
@@ -30,10 +30,10 @@ public class Page {
     @Column(name = "code", nullable = false)
     private Integer code;
 
-    @Column(name = "content", columnDefinition = "MEDIUMTEXT", nullable = false)
+    @Column(name = "content", columnDefinition = "TEXT", nullable = false)
     private String content;
 
-    @OneToMany(mappedBy = "pageId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "page", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Index> indexes;
 

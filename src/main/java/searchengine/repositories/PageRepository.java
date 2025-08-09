@@ -11,14 +11,14 @@ import java.util.Optional;
 @Repository
 public interface PageRepository extends JpaRepository<Page, Integer> {
 
-    @Query("SELECT p FROM Page p WHERE p.path = :path AND p.siteId = :siteId")
-    Optional<Page> findPageByPathAndSiteId(String path, Site siteId);
+    @Query("SELECT p FROM Page p WHERE p.path = :path AND p.site = :site")
+    Optional<Page> findPageByPathAndSiteId(String path, Site site);
 
     @Query("SELECT p FROM Page p WHERE p.path = :path")
     Optional<Page> findPageByPath(String path);
 
-    @Query("SELECT COUNT(p) FROM Page p WHERE p.siteId = :siteId")
-    Optional<Integer> countPagesBySite(Site siteId);
+    @Query("SELECT COUNT(p) FROM Page p WHERE p.site = :site")
+    Optional<Integer> countPagesBySite(Site site);
 
     @Query("SELECT p FROM Page p WHERE p.id = :key")
     Optional<Page> findPageById(Integer key);

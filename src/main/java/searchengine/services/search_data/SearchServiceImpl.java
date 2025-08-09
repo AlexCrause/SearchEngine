@@ -135,7 +135,7 @@ public class SearchServiceImpl implements SearchService {
             System.out.println("Lemma: " + lemma.getLemma() + " | "
                     + "LemmaId: " + lemma.getId() + " | " +
                     "LemmaFrequency: " + lemma.getFrequency() + " | " +
-                    "SiteId: " + lemma.getSiteId().getId());
+                    "SiteId: " + lemma.getSite().getId());
         }
         System.out.println();
         return lemmasAtSite;
@@ -172,7 +172,7 @@ public class SearchServiceImpl implements SearchService {
             System.out.println("Lemma: " + rareLemma.getLemma() + " | "
                     + "LemmaId: " + rareLemma.getId() + " | " +
                     "LemmaFrequency: " + rareLemma.getFrequency() + " | " +
-                    "SiteId: " + rareLemma.getSiteId().getUrl());
+                    "SiteId: " + rareLemma.getSite().getUrl());
         }
         System.out.println();
         return rareLemmas;

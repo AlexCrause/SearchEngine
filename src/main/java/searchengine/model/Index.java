@@ -9,7 +9,7 @@ import javax.persistence.*;
 @Entity
 @Getter
 @Setter
-@Table(name = "`index`")
+@Table(name = "search_index")
 public class Index {
 
     @Id
@@ -20,13 +20,13 @@ public class Index {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "page_id", nullable = false)
     @JsonBackReference
-    private Page pageId;
+    private Page page;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lemma_id", nullable = false)
     @JsonBackReference
-    private Lemma lemmaId;
+    private Lemma lemma;
 
-    @Column(name = "`rank`", nullable = false)
+    @Column(name = "rank_value", nullable = false)
     private float rank;
 }

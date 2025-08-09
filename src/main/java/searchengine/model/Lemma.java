@@ -23,15 +23,15 @@ public class Lemma {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "site_id", nullable = false)
     @JsonBackReference
-    private Site siteId;
+    private Site site;
 
-    @Column(name = "lemma", columnDefinition = "VARCHAR(255)", nullable = false)
+    @Column(name = "lemma", nullable = false)
     private String lemma;
 
     @Column(name = "frequency", nullable = false)
     private Integer frequency;
 
-    @OneToMany(mappedBy = "lemmaId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "lemma", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Index> indexes;
 
@@ -42,11 +42,11 @@ public class Lemma {
 
     public void addIndex(Index index) {
         indexes.add(index);
-        index.setLemmaId(this);
+        index.setLemma(this);
     }
 
     public void removeIndex(Index index) {
         indexes.remove(index);
-        index.setLemmaId(null);
+        index.setLemma(null);
     }
 }

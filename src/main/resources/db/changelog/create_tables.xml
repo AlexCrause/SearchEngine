@@ -1,0 +1,223 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                   http://www.liquibase.org/xml/ns/pro
+                   http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd
+                   http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet author="Alex" id="site-create">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="site"/>
+            </not>
+        </preConditions>
+        <createTable tableName="site">
+            <column name="id" type="INTEGER" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status_time" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_error" type="TEXT"/>
+            <column name="url" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Alex" id="page-create">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="page"/>
+            </not>
+        </preConditions>
+        <createTable tableName="page">
+            <column name="id" type="INTEGER" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="code" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="path" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="site_id" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Alex" id="fk-page-site">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyName="fk-page-site"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint
+                baseColumnNames="site_id"
+                baseTableName="page"
+                constraintName="fk-page-site"
+                referencedColumnNames="id"
+                referencedTableName="site"
+                onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet author="Alex" id="lemma-create">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="lemma"/>
+            </not>
+        </preConditions>
+        <createTable tableName="lemma">
+            <column name="id" type="INTEGER" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="frequency" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="lemma" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="site_id" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Alex" id="fk-lemma-site">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyName="fk-lemma-site"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint
+                baseColumnNames="site_id"
+                baseTableName="lemma"
+                constraintName="fk-lemma-site"
+                referencedColumnNames="id"
+                referencedTableName="site"
+                onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet author="Alex" id="index-create">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="search_index"/>
+            </not>
+        </preConditions>
+        <createTable tableName="search_index">
+            <column name="id" type="INTEGER" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="rank_value" type="REAL">
+                <constraints nullable="false"/>
+            </column>
+            <column name="lemma_id" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="page_id" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Alex" id="fk-index-page">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyName="fk-index-page"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint
+                baseColumnNames="page_id"
+                baseTableName="search_index"
+                constraintName="fk-index-page"
+                referencedColumnNames="id"
+                referencedTableName="page"
+                onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet author="Alex" id="fk-index-lemma">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyName="fk-index-lemma"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint
+                baseColumnNames="lemma_id"
+                baseTableName="search_index"
+                constraintName="fk-index-lemma"
+                referencedColumnNames="id"
+                referencedTableName="lemma"
+                onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet author="Alex" id="index-page">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index-page"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index-page" tableName="search_index">
+            <column name="page_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Alex" id="lemma-site">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="lemma-site"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="lemma-site" tableName="lemma">
+            <column name="site_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Alex" id="index-lemma">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index-lemma"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index-lemma" tableName="search_index">
+            <column name="lemma_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Alex" id="page-site">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="page-site"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="page-site" tableName="page">
+            <column name="site_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Alex" id="path-page">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="path-page"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="path-page" tableName="page">
+            <column name="path"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

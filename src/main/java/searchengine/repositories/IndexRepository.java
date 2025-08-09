@@ -14,19 +14,19 @@ import java.util.Set;
 @Repository
 public interface IndexRepository extends JpaRepository<Index, Integer> {
 
-    @Query("SELECT COUNT(*) FROM Index i WHERE i.lemmaId = ?1")
-    Optional<Integer> foundCountPagesByLemmaId(Lemma lemmaId);
+    @Query("SELECT COUNT(*) FROM Index i WHERE i.lemma = ?1")
+    Optional<Integer> foundCountPagesByLemmaId(Lemma lemma);
 
-    @Query("SELECT p FROM Page p JOIN p.indexes i WHERE i.lemmaId = ?1")
-    List<Page> findPagesByLemma(Lemma lemmaId);
+    @Query("SELECT p FROM Page p JOIN p.indexes i WHERE i.lemma = ?1")
+    List<Page> findPagesByLemma(Lemma lemma);
 
 
-    @Query("SELECT i FROM Index i WHERE i.lemmaId = ?1")
-    List<Index> findIndexByLemma(Lemma lemmaId);
+    @Query("SELECT i FROM Index i WHERE i.lemma = ?1")
+    List<Index> findIndexByLemma(Lemma lemma);
 
-    @Query("SELECT i FROM Index i WHERE i.pageId = ?1 AND i.lemmaId IN ?2")
-    List<Index> findListIndexesByPageAndLemmaList(Page pageId, List<Lemma> lemmas);
+    @Query("SELECT i FROM Index i WHERE i.page = ?1 AND i.lemma IN ?2")
+    List<Index> findListIndexesByPageAndLemmaList(Page page, List<Lemma> lemmas);
 
-    @Query("SELECT SUM(i.rank) FROM Index i WHERE i.pageId = ?1 AND i.lemmaId IN ?2")
+    @Query("SELECT SUM(i.rank) FROM Index i WHERE i.page = ?1 AND i.lemma IN ?2")
     float sumRankForPageAndLemmas(Page page, List<Lemma> lemmas);
 }

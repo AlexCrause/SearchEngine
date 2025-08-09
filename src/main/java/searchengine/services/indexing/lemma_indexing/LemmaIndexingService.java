@@ -74,7 +74,7 @@ public class LemmaIndexingService {
                         lemma = new Lemma();
                         lemma.setLemma(lemmaText);
                         lemma.setFrequency(1);
-                        lemma.setSiteId(site);
+                        lemma.setSite(site);
 
                         siteLemmas.put(lemmaText, lemma);
                         lemmasToSave.add(lemma);
@@ -92,8 +92,8 @@ public class LemmaIndexingService {
                     Lemma lemma = siteLemmas.get(lemmaText);
 
                     Index index = new Index();
-                    index.setPageId(page);
-                    index.setLemmaId(lemma);
+                    index.setPage(page);
+                    index.setLemma(lemma);
                     index.setRank(rank);
                     indicesToSave.add(index);
                 }
