@@ -114,6 +114,8 @@ public class IndexingServiceImpl implements IndexingService {
     @Override
     public Optional<?> indexPage(String urlPage) {
 
+        Site targetSite = null;
+
         for (Site site : sites.getSites()) {
             String urlSite = site.getUrl();
             try {
@@ -121,24 +123,33 @@ public class IndexingServiceImpl implements IndexingService {
                 System.out.println("domainHost: " + domainHost);
                 System.out.println("urlPage: " + urlPage);
                 if (urlPage.contains(domainHost)) {
-
-                    IndexingPage.indexPage(urlPage, urlSite,
-                            pageIndexingService,
-                            lemmaIndexingService);
-                    IndexingResponse response = new IndexingResponse();
-                    response.setResult(true);
-                    return Optional.of(response);
+                    targetSite = site;
+                    break;
                 }
-                IndexingResponseError error = new IndexingResponseError();
-                error.setResult(false);
-                error.setError("Данная страница находится за пределами сайтов, " +
-                        "указанных в конфигурационном файле");
-                return Optional.of(error);
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
         }
-        return Optional.empty();
+        if (targetSite != null){
+            try {
+                Site finalTargetSite = targetSite;
+                executor.execute(() -> IndexingPage.indexPage(urlPage, finalTargetSite.getUrl(),
+                        pageIndexingService,
+                        lemmaIndexingService));
+                IndexingResponse response = new IndexingResponse();
+                response.setResult(true);
+                return Optional.of(response);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+        } else {
+            IndexingResponseError error = new IndexingResponseError();
+            error.setResult(false);
+            error.setError("Данная страница находится за пределами сайтов, " +
+                    "указанных в конфигурационном файле");
+            return Optional.of(error);
+        }
     }
 
     private void stopForkJoinPool() {
