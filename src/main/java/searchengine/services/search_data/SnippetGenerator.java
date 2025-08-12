@@ -39,21 +39,6 @@ public class SnippetGenerator {
         return sb.toString().trim();
     }
 
-//    private String getSurroundingContext(String fullText, List<String> lemmas) {
-//        String[] sentences = fullText.split("(?<=[.!?])\\s+");
-//        List<String> result = new ArrayList<>();
-//
-//        for (String sentence : sentences) {
-//            for (String lemma : lemmas) {
-//                if (sentence.toLowerCase().contains(lemma.toLowerCase())) {
-//                    result.add(sentence.trim());
-//                    break;
-//                }
-//            }
-//            if (result.size() == 1) break;
-//        }
-//        return String.join(" ", result);
-//    }
 
     public String extractSnippet(String text, List<String> lemmas, int contextLength) {
         String lowerText = text.toLowerCase();
@@ -78,8 +63,8 @@ public class SnippetGenerator {
 
         // Создаем регулярное выражение для поиска лемм
         String pattern = lemmas.stream()
-                .map(Pattern::quote)
-                .collect(Collectors.joining("|", "(?i)(", ")"));
+                .map(lemma -> "\\b(" + lemma + ")\\b")
+                .collect(Collectors.joining("|", "(?iu)", ""));
 
         return snippet.replaceAll(pattern, "<b>$1</b>");
     }
