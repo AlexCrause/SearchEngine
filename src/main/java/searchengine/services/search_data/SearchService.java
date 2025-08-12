@@ -1,7 +1,8 @@
 package searchengine.services.search_data;
 
-import java.util.Optional;
+import searchengine.dto.search.SearchResponse;
+
 
 public interface SearchService {
-    Optional<?> search(String query, String site, int offset, int limit);
+    SearchResponse search(String query, String site, int offset, int limit);
 }

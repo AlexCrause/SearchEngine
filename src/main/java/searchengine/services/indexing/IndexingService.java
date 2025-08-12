@@ -1,12 +1,14 @@
 package searchengine.services.indexing;
 
+import searchengine.dto.indexing.IndexingResponse;
+
 import java.util.Optional;
 
 public interface IndexingService {
 
-    Optional<?> startIndexing();
+    IndexingResponse startIndexing();
 
-    Optional<?> stopIndexing();
+    IndexingResponse stopIndexing();
 
-    Optional<?> indexPage(String url);
+    IndexingResponse indexPage(String url);
 }

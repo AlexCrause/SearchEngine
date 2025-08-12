@@ -8,7 +8,7 @@ import searchengine.config.Site;
 import searchengine.config.SitesList;
 import searchengine.dto.search.ResponseData;
 import searchengine.dto.search.SearchResponse;
-import searchengine.dto.search.SearchResponseError;
+import searchengine.exception.SearchException;
 import searchengine.model.Lemma;
 import searchengine.model.Page;
 import searchengine.repositories.IndexRepository;
@@ -34,13 +34,12 @@ public class SearchServiceImpl implements SearchService {
     private static final double FREQUENCY = 0.8;
 
     @Override
-    public Optional<?> search(String query,
-                              String site,
-                              int offset,
-                              int limit) {
+    public SearchResponse search(String query,
+                                   String site,
+                                   int offset,
+                                   int limit) {
         if (query == null || query.isBlank()) {
-            return Optional.of(
-                    new SearchResponseError(false, "Задан пустой поисковый запрос"));
+            throw new SearchException("Задан пустой поисковый запрос");
         }
 
         limit = (limit == 0) ? 20 : limit;
@@ -48,11 +47,8 @@ public class SearchServiceImpl implements SearchService {
         if (site == null || site.isBlank()) {
             List<ResponseData> aggregatedResults = new ArrayList<>();
             for (Site s : sites.getSites()) {
-                Optional<?> response = search(query, s.getUrl(), offset, limit);
-                if (response.get() instanceof SearchResponse searchResponse
-                        && searchResponse.getResult()) {
-                    aggregatedResults.addAll(searchResponse.getData());
-                }
+                SearchResponse response = search(query, s.getUrl(), offset, limit);
+                aggregatedResults.addAll(response.getData());
             }
             aggregatedResults.sort(Comparator.comparing(ResponseData::getRelevance).reversed());
 
@@ -64,7 +60,7 @@ public class SearchServiceImpl implements SearchService {
                     .limit(limit)
                     .collect(Collectors.toList()));
 
-            return Optional.of(mergedResponse);
+            return mergedResponse;
         }
 
         Optional<Site> optionalConfiguredSite = sites.getSites().stream()
@@ -72,8 +68,7 @@ public class SearchServiceImpl implements SearchService {
                 .findFirst();
 
         if (optionalConfiguredSite.isEmpty()) {
-            return Optional.of(
-                    new SearchResponseError(false, "Сайт не найден в конфигурации"));
+            throw new SearchException("Сайт не найден в конфигурации");
         }
 
         Site configuredSite = optionalConfiguredSite.get();
@@ -83,8 +78,7 @@ public class SearchServiceImpl implements SearchService {
         List<Lemma> sortedLemmas = sortLemmasByFrequency(filteredLemmas);
 
         if (sortedLemmas.isEmpty()) {
-            return Optional.of(
-                    new SearchResponseError(false, "Нет подходящих лемм для поиска"));
+            throw new SearchException("Нет подходящих лемм для поиска");
         }
 
         List<Page> pages = findPagesByLemmas(sortedLemmas);
@@ -102,7 +96,7 @@ public class SearchServiceImpl implements SearchService {
                 .limit(limit)
                 .collect(Collectors.toList()));
 
-        return Optional.of(response);
+        return response;
     }
 
 

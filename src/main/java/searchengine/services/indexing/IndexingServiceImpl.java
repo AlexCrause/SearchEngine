@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import searchengine.config.Site;
 import searchengine.config.SitesList;
 import searchengine.dto.indexing.IndexingResponse;
-import searchengine.dto.indexing.IndexingResponseError;
+import searchengine.exception.IndexingException;
 import searchengine.services.indexing.lemma_indexing.LemmaIndexingService;
 import searchengine.services.indexing.page_indexing.IndexingPage;
 import searchengine.services.indexing.page_indexing.PageIndexingService;
@@ -13,7 +13,6 @@ import searchengine.services.indexing.site_indexing.SiteIndexingService;
 
 import java.net.MalformedURLException;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.*;
 
 
@@ -42,13 +41,11 @@ public class IndexingServiceImpl implements IndexingService {
         forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
     }
 
-    public Optional<?> startIndexing() {
+    @Override
+    public IndexingResponse startIndexing() {
 
         if (isIndexing) {
-            IndexingResponseError error = new IndexingResponseError();
-            error.setResult(false);
-            error.setError("Индексация уже запущена");
-            return Optional.of(error);
+            throw new IndexingException("Индексация уже запущена");
         }
 
         isIndexing = true;
@@ -78,17 +75,14 @@ public class IndexingServiceImpl implements IndexingService {
         }
         IndexingResponse response = new IndexingResponse();
         response.setResult(true);
-        return Optional.of(response);
+        return response;
     }
 
     @Override
-    public Optional<?> stopIndexing() {
+    public IndexingResponse stopIndexing() {
 
         if (!isIndexing) {
-            IndexingResponseError error = new IndexingResponseError();
-            error.setResult(false);
-            error.setError("Индексация не запущена");
-            return Optional.of(error);
+            throw new IndexingException("Индексация не запущена");
         }
 
         isIndexing = false;
@@ -108,11 +102,11 @@ public class IndexingServiceImpl implements IndexingService {
 
         IndexingResponse response = new IndexingResponse();
         response.setResult(true);
-        return Optional.of(response);
+        return response;
     }
 
     @Override
-    public Optional<?> indexPage(String urlPage) {
+    public IndexingResponse indexPage(String urlPage) {
 
         Site targetSite = null;
 
@@ -138,17 +132,13 @@ public class IndexingServiceImpl implements IndexingService {
                         lemmaIndexingService));
                 IndexingResponse response = new IndexingResponse();
                 response.setResult(true);
-                return Optional.of(response);
+                return response;
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-
         } else {
-            IndexingResponseError error = new IndexingResponseError();
-            error.setResult(false);
-            error.setError("Данная страница находится за пределами сайтов, " +
+            throw new IndexingException("Данная страница находится за пределами сайтов, " +
                     "указанных в конфигурационном файле");
-            return Optional.of(error);
         }
     }
 
