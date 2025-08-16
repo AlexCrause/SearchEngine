@@ -33,7 +33,6 @@ public class Lemmatizer {
         }
     }
 
-    //private static final Pattern WORD_PATTERN = Pattern.compile("[а-яА-ЯёЁa-zA-Z`-]+");
     private static final Pattern WORD_PATTERN = Pattern.compile("[\\p{L}&&[^\\p{So}]]+(?:-[\\p{L}&&[^\\p{So}]]+)*");
 
     private final Map<String, Integer> lemmatizedText = new ConcurrentHashMap<>();
@@ -52,6 +51,8 @@ public class Lemmatizer {
     }
 
     public Map<String, Integer> lemmatize(String text) {
+        lemmatizedText.clear();
+        lemmaCache.clear();
         processText(text);
         saveLemmasToDB();
         return lemmatizedText;

@@ -31,7 +31,7 @@ public class SearchServiceImpl implements SearchService {
     private final SiteRepository siteRepository;
     private final IndexRepository indexRepository;
     private final PageRepository pageRepository;
-    private static final double FREQUENCY = 0.8;
+    private static final double FREQUENCY = 1;
 
     @Override
     public SearchResponse search(String query,
